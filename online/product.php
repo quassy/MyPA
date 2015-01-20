@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,13 +50,13 @@ function prod_unit ($unit, $num) {
 
   $num = (int) $num;
   
-  $res = mysql_query ("SELECT metal, crystal, eonium, build_ticks ".
+  $res = mysqli_query ($db, "SELECT metal, crystal, eonium, build_ticks ".
 		      "FROM unit_class AS uc, rc WHERE uc.id='$unit' AND uc.class!=5 ".
 		      "AND rc.rc_id=uc.rc_id AND rc.status=3 ".
-		      " AND rc.planet_id='$Planetid'", $db);
+		      " AND rc.planet_id='$Planetid'" );
 
-  if (mysql_num_rows($res) == 1) {
-    $price = mysql_fetch_row($res);
+  if (mysqli_num_rows($res) == 1) {
+    $price = mysqli_fetch_row($res);
     
     if ( $myrow["metal"] < ($price[0] * $num) ) {
       $num = (int) ($myrow["metal"] / $price[0]);
@@ -79,47 +79,51 @@ function prod_unit ($unit, $num) {
       $q = "UPDATE planet SET metal='$myrow[metal]',crystal='$myrow[crystal]',".
 	   "eonium='$myrow[eonium]' WHERE id='$Planetid' ".
            "AND metal>='$cm' AND crystal>='$cc' AND eonium>='$ce'";
-      $result = mysql_query($q, $db);
+      $result = mysqli_query($db, $q );
 
-      if (mysql_affected_rows($db)==1) {
+      if (mysqli_affected_rows($db)==1) {
         $q = "INSERT DELAYED INTO unit_build SET planet_id='$Planetid',unit_id='$unit',".
 	   "build_ticks=$price[3], num=$num";
-        $res = mysql_query ($q, $db);
+        $res = mysqli_query ($db, $q );
       } 
 
     }
   }
 }
 
-if ($submit) {
+if (ISSET($submit)) {
 
   /* aeusserst uncooles handling */
-  if ($ship_1) prod_unit (1, $ship_1);
-  if ($ship_2) prod_unit (2, $ship_2);
-  if ($ship_3) prod_unit (3, $ship_3);
-  if ($ship_4) prod_unit (4, $ship_4);
-  if ($ship_5) prod_unit (5, $ship_5);
-  if ($ship_6) prod_unit (6, $ship_6);
-  if ($ship_7) prod_unit (7, $ship_7);
-  if ($ship_8) prod_unit (8, $ship_8);
-  if ($ship_9) prod_unit (9, $ship_9);
-  if ($ship_10) prod_unit (10, $ship_10);
-  if ($ship_11) prod_unit (11, $ship_11);
-  if ($ship_12) prod_unit (12, $ship_12);
-  if ($ship_13) prod_unit (13, $ship_13);
-  if ($ship_14) prod_unit (14, $ship_14);
-  if ($ship_26) prod_unit (26, $ship_26);
+  if (ISSET($ship_1)) prod_unit (1, $ship_1);
+  if (ISSET($ship_2)) prod_unit (2, $ship_2);
+  if (ISSET($ship_3)) prod_unit (3, $ship_3);
+  if (ISSET($ship_4)) prod_unit (4, $ship_4);
+  if (ISSET($ship_5)) prod_unit (5, $ship_5);
+  if (ISSET($ship_6)) prod_unit (6, $ship_6);
+  if (ISSET($ship_7)) prod_unit (7, $ship_7);
+  if (ISSET($ship_8)) prod_unit (8, $ship_8);
+  if (ISSET($ship_9)) prod_unit (9, $ship_9);
+  if (ISSET($ship_10)) prod_unit (10, $ship_10);
+  if (ISSET($ship_11)) prod_unit (11, $ship_11);
+  if (ISSET($ship_12)) prod_unit (12, $ship_12);
+  if (ISSET($ship_13)) prod_unit (13, $ship_13);
+  if (ISSET($ship_14)) prod_unit (14, $ship_14);
+  if (ISSET($ship_26)) prod_unit (26, $ship_26);
 }
 
 /* top table is written now */
 top_header($myrow);
 
-$msg .= "";
+if (ISSET($msg)) {
+  $msg .= "";
+} else {
+  $msg = "";
+}
 titlebox("Production", $msg);
 ?>
 
 <center>
-<form method="post" action="<?php echo $PHP_SELF?>">
+<form method="post" action="<?php echo $_SERVER["PHP_SELF"]?>">
 <table border="1" width="650">
 <tr><th colspan="5" class="a">Ship Production</th></tr>
 <tr><th width="100">Unit</th>
@@ -143,15 +147,15 @@ $q = "SELECT uc.id, uc.name, uc.description, uc.metal, uc.crystal, uc.eonium, ".
      "uc.build_ticks FROM unit_class AS uc, rc ".
      "WHERE rc.planet_id='$Planetid' AND rc.status=3 AND uc.rc_id=rc.rc_id AND uc.class!=5 ";
 
-$result = mysql_query ($q, $db);
-if ($result && mysql_num_rows($result) > 0) {
+$result = mysqli_query ($db, $q );
+if ($result && mysqli_num_rows($result) > 0) {
 
-  while ($myunit = mysql_fetch_row($result)) {
+  while ($myunit = mysqli_fetch_row($result)) {
 
-    $nr = mysql_query ("SELECT sum(units.num) FROM fleet, units WHERE ".
+    $nr = mysqli_query ($db, "SELECT sum(units.num) FROM fleet, units WHERE ".
 		       "fleet.planet_id='$Planetid' AND units.id=fleet.fleet_id " .
-		       "AND units.unit_id='$myunit[0]'", $db);
-    $stock = mysql_fetch_row ($nr);
+		       "AND units.unit_id='$myunit[0]'" );
+    $stock = mysqli_fetch_row ($nr);
     if ( !$stock[0]) $stock[0] = 0;
 
     print_unit_row ($myunit, $stock[0]);
@@ -186,13 +190,13 @@ $q = "SELECT uc.id, uc.name, uc.build_ticks FROM unit_class AS uc, rc ".
 $qq = "SELECT unit_id, sum(num), build_ticks FROM unit_build WHERE planet_id='$Planetid' ".
       "AND build_ticks!=0 GROUP BY unit_id, build_ticks";
 
-$result = mysql_query ($q, $db);
-if (mysql_num_rows($result) > 0) {
+$result = mysqli_query ($db, $q );
+if (mysqli_num_rows($result) > 0) {
 
-  $prod_res = mysql_query ($qq, $db);
-  $mybuild = mysql_fetch_row($prod_res);
+  $prod_res = mysqli_query ($db, $qq );
+  $mybuild = mysqli_fetch_row($prod_res);
 
-  while ($myunit = mysql_fetch_row($result)) {
+  while ($myunit = mysqli_fetch_row($result)) {
     /* name of it */
     echo "<tr><td>$myunit[1]</td>";
 
@@ -202,7 +206,7 @@ if (mysql_num_rows($result) > 0) {
 	if ($i == $mybuild[2] && $mybuild && $mybuild[0] == $myunit[0]) {
 	  /* in bau */
 	  echo "<td>$mybuild[1]</td>";
-	  $mybuild = mysql_fetch_row($prod_res);
+	  $mybuild = mysqli_fetch_row($prod_res);
 	} else {
 	  echo "<td>&nbsp;</td>";
 	}

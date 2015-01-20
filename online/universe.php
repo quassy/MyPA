@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,11 +32,11 @@ echo <<<EOF
 <table border="0" width="650">
   <tr><td width="200">&nbsp;</td>
       <td width="10" align="center"><hr></td>
-      <td align="center" width="100"><b><a href="$PHP_SELF">Player</a></b></td>
+      <td align="center" width="100"><b><a href="$_SERVER[PHP_SELF]">Player</a></b></td>
       <td width="10" align="center"><hr></td>
-      <td align="center" width="100"><b><a href="$PHP_SELF?type=galaxy">Galaxies</a></b></td>
+      <td align="center" width="100"><b><a href="$_SERVER[PHP_SELF]?type=galaxy">Galaxies</a></b></td>
       <td width="10" align="center"><hr></td>
-      <td align="center" width="100"><b><a href="$PHP_SELF?type=alliance">Alliance</a></b></td>
+      <td align="center" width="100"><b><a href="$_SERVER[PHP_SELF]?type=alliance">Alliance</a></b></td>
       <td width="10" align="center"><hr></td>
       <td width="200">&nbsp;</td>
   </tr>
@@ -44,17 +44,17 @@ echo <<<EOF
 <br>
 EOF;
 
-if ($type=="galaxy") {
+if (!ISSET($type)) {
+  $rtype = 1;
+} else if ($type=="galaxy") {
   $rtype = 2;
 } else if ($type=="alliance") {
   $rtype = 3;
-} else {
-  $rtype = 1;
 }
 
 $q = "SELECT COUNT(*) FROM planet WHERE score>='$myrow[score]' AND mode != 0";
-$result = mysql_query($q,$db);
-$rank = mysql_fetch_row ($result);
+$result = mysqli_query($db, $q);
+$rank = mysqli_fetch_row ($result);
 $rank = (int) $rank[0];
 
 $mygalrank = 0;

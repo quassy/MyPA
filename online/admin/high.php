@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,39 +34,39 @@ if (file_exists('/tmp/ticker.run')) {
   die;
 } else {
 
-$res = mysql_query("SELECT leader, planetname, x, y, z, score,".
+$res = mysqli_query($db, "SELECT leader, planetname, x, y, z, score,".
         "metalroids+crystalroids+eoniumroids+uniniroids ".
         "FROM planet WHERE mode!=0 AND mode!=4 ".
-	"ORDER BY score DESC LIMIT 1", $db);
+	"ORDER BY score DESC LIMIT 1" );
 
 $rnd = substr($round,-2,2);
 
-if ($res && mysql_num_rows($res)>0) {
-  $row = mysql_fetch_row($res);
+if ($res && mysqli_num_rows($res)>0) {
+  $row = mysqli_fetch_row($res);
   $q = "INSERT INTO highscore set round=$rnd,leader='$row[0]',".
        "planetname='$row[1]',coords='$row[2]:$row[3]:$row[4]',score=$row[5],".
        "roids=$row[6],date=now()";
   echo "[$q]<br>";
-  mysql_query ($q,$db);
+  mysqli_query ($db, $q);
   echo "Player Highscore done";
 } else {
   echo "Player Highscore Failed";
   die;
 }
 
-$res = mysql_query("SELECT x, y, SUM(score) AS sc, SUM(metalroids + ".
+$res = mysqli_query($db, "SELECT x, y, SUM(score) AS sc, SUM(metalroids + ".
 	 	   "crystalroids + eoniumroids + uniniroids) " .
 		   "FROM planet WHERE mode != 0 GROUP by x, y ".
-		   "ORDER BY sc DESC LIMIT 1", $db);
-if ($res && mysql_num_rows($res)>0) {
-  $row = mysql_fetch_row($res);
-  $re = mysql_query("SELECT name FROM galaxy ".
-	  	    "WHERE x='$row[0]' AND y='$row[1]'", $db);
-  $ro = mysql_fetch_row($re);
+		   "ORDER BY sc DESC LIMIT 1" );
+if ($res && mysqli_num_rows($res)>0) {
+  $row = mysqli_fetch_row($res);
+  $re = mysqli_query($db, "SELECT name FROM galaxy ".
+	  	    "WHERE x='$row[0]' AND y='$row[1]'" );
+  $ro = mysqli_fetch_row($re);
   $q = "INSERT INTO highscore_gal set round=$rnd,galname='$ro[0]',".
        "coords='$row[0]:$row[1]',score=$row[2],roids=$row[3],date=now()";
   echo "[$q]<br>";
-  mysql_query ($q,$db);
+  mysqli_query ($db, $q);
   echo "Galaxy Highscore done";
 } else {
   echo "Galaxy Highscore Failed";
@@ -80,16 +80,16 @@ $q = "SELECT tag, hcname, members, ".
        "AND alliance.id=planet.alliance_id ".
        "GROUP BY alliance.id ORDER BY a_score DESC LIMIT 1";
 
-$res = mysql_query($q, $db);
+$res = mysqli_query($db, $q );
 
-if ($res && mysql_num_rows($res)>0) {
-  $row = mysql_fetch_row($res);
+if ($res && mysqli_num_rows($res)>0) {
+  $row = mysqli_fetch_row($res);
 
   $q = "INSERT INTO highscore_alliance set round=$rnd,tag='$row[0]',".
        "hcname='$row[1]',members=$row[2],score=$row[3],roids=$row[4],".
        "name='$row[5]',date=now()";
   echo "[$q]<br>";
-  mysql_query ($q,$db);
+  mysqli_query ($db, $q);
 
 
   echo "Alliance highscore done";

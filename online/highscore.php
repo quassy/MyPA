@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,11 +31,11 @@ echo <<<EOF
 <table border="0" width="650">
   <tr><td width="200">&nbsp;</td>
       <td width="10" align="center"><hr></td>
-      <td align="center" width="100"><b><a href="$PHP_SELF">Player</a></b></td>
+      <td align="center" width="100"><b><a href="$_SERVER[PHP_SELF]">Player</a></b></td>
       <td width="10" align="center"><hr></td>
-      <td align="center" width="100"><b><a href="$PHP_SELF?type=galaxy">Galaxies</a></b></td>
+      <td align="center" width="100"><b><a href="$_SERVER[PHP_SELF]?type=galaxy">Galaxies</a></b></td>
       <td width="10" align="center"><hr></td>
-      <td align="center" width="100"><b><a href="$PHP_SELF?type=alliance">Alliance</a></b></td>
+      <td align="center" width="100"><b><a href="$_SERVER[PHP_SELF]?type=alliance">Alliance</a></b></td>
       <td width="10" align="center"><hr></td>
       <td width="200">&nbsp;</td>
   </tr>
@@ -43,12 +43,12 @@ echo <<<EOF
 <br>
 EOF;
 
-if ($type=="galaxy") {
+if (!ISSET($type)){
+  $rtype = 1;
+} else if ($type=="galaxy") {
   $rtype = 2;
 } else if ($type=="alliance") {
   $rtype = 3;
-} else {
-  $rtype = 1;
 }
 
 if ($rtype == 1) {
@@ -68,11 +68,11 @@ EOF;
 
 $q = "SELECT round,leader,planetname,coords,score,roids,".
      "date_format(date,'%e %b %y') FROM highscore ORDER BY round DESC";
-$res = mysql_query($q, $db);
+$res = mysqli_query($db, $q );
 
-if ($res && mysql_num_rows($res)>0) {
+if ($res && mysqli_num_rows($res)>0) {
 
-  while( ($row = mysql_fetch_row($res)) ) {
+  while( ($row = mysqli_fetch_row($res)) ) {
 
      echo "<tr><td align=\"right\">$row[0]</td>".
        "<td>$row[1]</td>".
@@ -85,11 +85,8 @@ if ($res && mysql_num_rows($res)>0) {
 }
 
 echo <<<EOF
-<tr><td colspan="7">Sorry, previous rounds haven't been recorded.</td></tr>
-<tr><td colspan="7">round   15:  arse war<br>
-round   14:  xata of oblivion<br> 
-round   13:  blade<br>
-round 2:  Queen of the Universe
+<tr><td colspan="7">Sorry, old highscores have been deleted.</td></tr>
+<tr><td colspan="7">round 2:  Queen of the Universe
 </td>
 </tr>
 </table>
@@ -111,11 +108,11 @@ EOF;
 
 $q = "SELECT round,galname,coords,score,roids,".
      "date_format(date,'%e %b %y') FROM highscore_gal ORDER BY round DESC";
-$res = mysql_query($q, $db);
+$res = mysqli_query($db, $q );
 
-if ($res && mysql_num_rows($res)>0) {
+if ($res && mysqli_num_rows($res)>0) {
 
-  while( ($row = mysql_fetch_row($res)) ) {
+  while( ($row = mysqli_fetch_row($res)) ) {
 
      echo "<tr><td align=\"right\">$row[0]</td>".
        "<td>$row[1]</td>".
@@ -147,10 +144,10 @@ EOF;
 $q = "SELECT round,tag,name,hcname,members,score,roids,".
      "date_format(date,'%e %b %y') as dat ".
      "FROM highscore_alliance ORDER BY round DESC";
-$res = mysql_query($q, $db);
+$res = mysqli_query($db, $q );
 
-if ($res && mysql_num_rows($res)>0) {
-  while( ($row = mysql_fetch_array($res)) ) {
+if ($res && mysqli_num_rows($res)>0) {
+  while( ($row = mysqli_fetch_array($res)) ) {
     $sc = pval ($row["score"]);
     echo <<<EOF
 <tr>

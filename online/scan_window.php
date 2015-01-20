@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ $close_script="<SCRIPT LANGUAGE=\"javascript\">\n".
 $extra_header = "   <TITLE>Scan Window</TITLE>\n$close_script";
 
 require "standard_pop.php";
-require "planet_util.php";
+require "planet_util.inc";
 require "news_util.php";
 
 require "scan_util_2.inc";
@@ -42,7 +42,7 @@ if ($scan && $number && $x && $y && $z) {
   $reach = scan_target ($scan, $x, $y, $z, $number);
   echo "<center>";
   if ($reach && $scan != 7) $save_link = 
-     "<a href=\"$PHP_SELF?save=$scan&x=$x&y=$y&z=$z\">Save scan</a>";
+     "<a href=\"$_SERVER[PHP_SELF]?save=$scan&x=$x&y=$y&z=$z\">Save scan</a>";
 } else if ($save && $x && $y && $z ) {
   $tid = get_id ($x, $y, $z);
 
@@ -50,12 +50,12 @@ if ($scan && $number && $x && $y && $z) {
 
     $q = "SELECT id,data FROM journal WHERE planet_id='$Planetid' ".
        "AND target_id='$tid' AND type='$save'"; // AND hidden=1
-    $result = mysql_query ($q, $db);
+    $result = mysqli_query ($db, $q );
 
-    if ($result && mysql_num_rows($result) > 0) {
-      $row = mysql_fetch_row($result);
+    if ($result && mysqli_num_rows($result) > 0) {
+      $row = mysqli_fetch_row($result);
       echo "<br>\n$row[1]";
-      mysql_query ("UPDATE journal SET hidden=0 WHERE id=$row[0]", $db);
+      mysqli_query ($db, "UPDATE journal SET hidden=0 WHERE id=$row[0]" );
     }
   }
 } else {

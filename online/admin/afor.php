@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,14 +31,14 @@ require_once "../forum.inc";
 
 echo "<center>\n";
 
-if ($fthread && $Planetid<=2) {
-  $res = mysql_query("SELECT gal_id-1024 FROM politics ".
+if (ISSET($fthread) && $Planetid<=2) {
+  $res = mysqli_query("SELECT gal_id-1024 FROM politics ".
         "WHERE id='$fthread'", $db);
-  $row = mysql_fetch_row($res);
+  $row = mysqli_fetch_row($res);
   $allid = $row[0];
 }
 
-if ($allid && $Planetid<=2) {
+if (ISSET($allid) && $Planetid<=2) {
 
   $myrow["alliance_id"] = $allid;
   $myrow["status"] = 0;
@@ -54,7 +54,7 @@ if ($allid && $Planetid<=2) {
 
   forum_submit ($fstyle, $fid, $fthread);
 
-  if ($fthread) {
+  if (ISSET($fthread)) {
       forum_show_thread ($fstyle, $fid, $fthread);
   } else {
       forum_list_thread ($fstyle, $fid);
@@ -62,7 +62,7 @@ if ($allid && $Planetid<=2) {
 
 
 } else {
-  $ref = "$PHP_SELF?allid=";
+  $ref = "$_SERVER[PHP_SELF]?allid=";
   list_alliances_admin($ref);
 }
 

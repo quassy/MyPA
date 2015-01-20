@@ -1058,7 +1058,7 @@ CREATE TABLE user (
   login_date datetime default NULL,
   uptime time default '00:00:00',
   ip varchar(20) default '',
-  imgpath varchar(255) default 'http://khan.stoney.cinetic.de/img',
+  imgpath varchar(255) default '/img',
   delete_date datetime default '0000-00-00 00:00:00',
   settings int(10) unsigned default '0',
   mysession varchar(35) default NULL,
@@ -1072,6 +1072,6 @@ CREATE TABLE user (
 # Dumping data for table 'user'
 #
 
-INSERT  DELAYED INTO user (login, password, email, planet_id, last, signup, first_tick, last_tick, last_sleep, login_date, uptime, ip, imgpath, delete_date, settings, mysession, last_post, error) VALUES ('admin','admin','myphppa@web.de',1,'2003-08-03 11:12:41','2003-08-03 11:12:41',0,0,'0000-00-00 00:00:00',NULL,'00:00:00','','http://khan.stoney.cinetic.de/img','0000-00-00 00:00:00',0,NULL,'0000-00-00 00:00:00',0);
-INSERT  DELAYED INTO user (login, password, email, planet_id, last, signup, first_tick, last_tick, last_sleep, login_date, uptime, ip, imgpath, delete_date, settings, mysession, last_post, error) VALUES ('moderator','moderator','myphppa@web.de',2,'2003-08-03 11:12:41','2003-08-03 11:12:41',0,0,'0000-00-00 00:00:00',NULL,'00:00:00','','http://khan.stoney.cinetic.de/img','0000-00-00 00:00:00',0,NULL,'0000-00-00 00:00:00',0);
+INSERT  DELAYED INTO user (login, password, email, planet_id, last, signup, first_tick, last_tick, last_sleep, login_date, uptime, ip, imgpath, delete_date, settings, mysession, last_post, error) VALUES ('admin','admin','myphppa@web.de',1,'2003-08-03 11:12:41','2003-08-03 11:12:41',0,0,'0000-00-00 00:00:00',NULL,'00:00:00','','/img','0000-00-00 00:00:00',0,NULL,'0000-00-00 00:00:00',0);
+INSERT  DELAYED INTO user (login, password, email, planet_id, last, signup, first_tick, last_tick, last_sleep, login_date, uptime, ip, imgpath, delete_date, settings, mysession, last_post, error) VALUES ('moderator','moderator','myphppa@web.de',2,'2003-08-03 11:12:41','2003-08-03 11:12:41',0,0,'0000-00-00 00:00:00',NULL,'00:00:00','','/img','0000-00-00 00:00:00',0,NULL,'0000-00-00 00:00:00',0);
 

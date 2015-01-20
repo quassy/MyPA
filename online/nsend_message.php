@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,36 +27,36 @@ $close_script="<SCRIPT LANGUAGE=\"text/javascript\">\n".
 "}\n// END\n//-->\n</SCRIPT>\n";
 
 
-if ($reply) {
+if (ISSET($reply)) {
      $extra_header = "   <TITLE>Reply Message</TITLE>\n$close_script";
-} else if ($forward) {
+} else if (ISSET($forward)) {
      $extra_header = "   <TITLE>Forward Message</TITLE>\n$close_script";
-} else if ($cluster) {
-  if ($gal) {
+} else if (ISSET($cluster)) {
+  if (ISSET($gal)) {
     $extra_header = "   <TITLE>Galaxy Message</TITLE>\n$close_script";
   } else {
     $extra_header = "   <TITLE>Cluster Message</TITLE>\n$close_script";
   }
-} else if ($hc) {
+} else if (ISSET($hc)) {
   $extra_header = "   <TITLE>HC Alliance Message</TITLE>\n$close_script";
-} else if ($alc) {
+} else if (ISSET($alc)) {
   $extra_header = "   <TITLE>Alliance Member Message</TITLE>\n$close_script";
 } else {
      $extra_header = "   <TITLE>New Message</TITLE>\n$close_script";
 }
 require "standard_pop.php";
 
-if ($submit) {
+if (ISSET($submit)) {
   require "post_func.inc";
   check_post();
 }
 
-require "planet_util.php";
+require "planet_util.inc";
 
-if ($cluster) {
+if (ISSET($cluster)) {
   $q = "SELECT moc FROM galaxy WHERE x=$myrow[x] AND y=$myrow[y] AND moc=$Planetid";
-  $res = mysql_query ($q, $db);
-  if (mysql_num_rows($res) != 1 && $Planetid!=1) {
+  $res = mysqli_query ($db, $q );
+  if (mysqli_num_rows($res) != 1 && $Planetid!=1) {
     $gal=0;
     $cluster=0;
   }  

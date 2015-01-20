@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,11 +33,11 @@ function t() {
 echo "<br>";
 echo "Optimizing<br>";
 
-$res = mysql_query ("SHOW tables",$db);
+$res = mysqli_query ($db, "SHOW tables");
 
-while ($row=mysql_fetch_row($res)) {
+while ($row=mysqli_fetch_row($res)) {
   echo "Table: $row[0] ...";
-  mysql_query ("OPTIMIZE TABLE $row[0]", $db);
+  mysqli_query ($db, "OPTIMIZE TABLE $row[0]" );
   t ();
   echo "<br>";
 }

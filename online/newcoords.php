@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,12 +31,12 @@ function get_new_coords (&$x, &$y, &$z, $open_cluster=1) {
   if ($upper_cluster <= 0) return 0;
 
   do {
-    $result = mysql_query ("SELECT x,y FROM galaxy WHERE x>=$lower_cluster ".
+    $result = mysqli_query ("SELECT x,y FROM galaxy WHERE x>=$lower_cluster ".
 			   "AND x<=$upper_cluster AND members<$gal_size ".
 			   "AND !(x=1 and y=1) GROUP BY x, y", $db);
     if (!$result) return 1;
 
-    $cnt = mysql_num_rows($result);
+    $cnt = mysqli_num_rows($result);
 
     if ($cnt == 0) {
       $lower_cluster = $upper_cluster+1;
@@ -58,17 +58,17 @@ function get_new_coords (&$x, &$y, &$z, $open_cluster=1) {
 
   // etwas unelegant aber .. skipping bis zum n-ten
   while ($rval>1) {
-    $row = mysql_fetch_row($result);
+    $row = mysqli_fetch_row($result);
     $rval--;
   }
-  $row = mysql_fetch_row($result);
+  $row = mysqli_fetch_row($result);
 
   $x = $row[0];
   $y = $row[1];
 
-  $result = mysql_query ("SELECT z FROM planet WHERE x='$x' and y='$y' ".
+  $result = mysqli_query ("SELECT z FROM planet WHERE x='$x' and y='$y' ".
 			 "ORDER  by z DESC LIMIT 1", $db);
-  $row = mysql_fetch_row($result);
+  $row = mysqli_fetch_row($result);
   $z = $row[0] + 1;
 
   return 0;

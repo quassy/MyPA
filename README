@@ -3,7 +3,9 @@ You will need a Unix machine (probably linux) to run this.
 
 I've run it on a MySQL-3 (You need to create a database there - 
 mine was named planetarion), and PHP-4.
-(NB: for mysql-4 you might need to convert some names)
+
+Version 0.8.16 is an update to run on PHP-5 (eg 5.1) and
+MySQL-4.1/5.0 (the 5.0 is less tested as is 0.8.16 at all).
 
 To edit:
 

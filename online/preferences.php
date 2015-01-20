@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,14 +28,14 @@ require "dblogon.php";
 
 db_auth($db,$Username,$Password,$Planetid);
 
-$result = mysql_query("SELECT tick FROM general"); 
-$row = mysql_fetch_row($result);
+$result = mysqli_query($db, "SELECT tick FROM general"); 
+$row = mysqli_fetch_row($result);
 $mytick = $row[0];
 
-$result = mysql_query("SELECT * FROM planet WHERE id=$Planetid",$db);
-$myrow = mysql_fetch_array($result);
+$result = mysqli_query($db, "SELECT * FROM planet WHERE id=$Planetid");
+$myrow = mysqli_fetch_array($result);
 
-mysql_query("UPDATE user set last=NOW(),last_tick='$mytick' ".
+mysqli_query($db, "UPDATE user set last=NOW(),last_tick='$mytick' ".
 	    "WHERE planet_id='$Planetid'"); 
 
 // standard.php
@@ -84,8 +84,8 @@ function check_status($sleep) {
     // when did I sleep last time 
     $q = "SELECT UNIX_TIMESTAMP(now()) - UNIX_TIMESTAMP(last_sleep) ".
        "FROM user WHERE planet_id='$Planetid'";
-    $res = mysql_query($q, $db);
-    $row = mysql_fetch_row($res);
+    $res = mysqli_query($db, $q );
+    $row = mysqli_fetch_row($res);
     if ($row[0] < $sleep_period * 3600) {
       $next = $sleep_period * 3600 - $row[0];
       $tim = sprintf("%d hours, %d minutes and %d seconds", 
@@ -100,17 +100,17 @@ function check_status($sleep) {
   // if fleets are out
   $q = "SELECT num FROM fleet WHERE (target_id!=0 OR full_eta!=0 OR ".
      "ticks !=0 OR type!=0) AND planet_id='$Planetid'";
-  $res = mysql_query($q, $db);
-  if ($res && mysql_num_rows($res) > 0) {
+  $res = mysqli_query($db, $q );
+  if ($res && mysqli_num_rows($res) > 0) {
     $msg = "Your fleets are out - wait until they return.";
     return 1;
   }
 
   // if somebody attacks me
   $q = "SELECT num FROM fleet WHERE target_id='$Planetid'";
-  $res = mysql_query($q, $db);
-  if ($res && mysql_num_rows($res) > 0) {
-    $n = mysql_num_rows($res);
+  $res = mysqli_query($db, $q );
+  if ($res && mysqli_num_rows($res) > 0) {
+    $n = mysqli_num_rows($res);
     $msg = "You are currently under attack ($n, $Planetid).";
     return 1;
   }
@@ -129,12 +129,12 @@ function show_preference($descr, $choice, $set) {
    "</select></td></tr>\n";
 }
 
-if ($vacation) {
+if (ISSET($vacation)) {
   $check = check_status(0);
   
   if ($check==0) {
-    mysql_query ("UPDATE planet SET mode=4 WHERE id='$Planetid'", $db);
-    mysql_query ("UPDATE user SET last_sleep=now() WHERE planet_id='$Planetid'", $db);
+    mysqli_query ($db, "UPDATE planet SET mode=4 WHERE id='$Planetid'" );
+    mysqli_query ($db, "UPDATE user SET last_sleep=now() WHERE planet_id='$Planetid'" );
     setcookie("Password","");
     setcookie("Planetid",-1);
     setcookie("Username","");
@@ -144,13 +144,13 @@ if ($vacation) {
     do_logout ($msg);
   }
 }
-if ($sleep) {
+if (ISSET($sleep)) {
 
   $check = check_status(1);
   
   if ($check==0) {
-    mysql_query ("UPDATE planet SET mode=3 WHERE id='$Planetid'", $db);
-    mysql_query ("UPDATE user SET last_sleep=now() WHERE planet_id='$Planetid'", $db);
+    mysqli_query ($db, "UPDATE planet SET mode=3 WHERE id='$Planetid'" );
+    mysqli_query ($db, "UPDATE user SET last_sleep=now() WHERE planet_id='$Planetid'" );
     setcookie("Password","");
     setcookie("Planetid",-1);
     setcookie("Username","");
@@ -161,43 +161,43 @@ if ($sleep) {
   }
 }
 
-if($pwchange) {
-  if (!$oldpw || md5($oldpw) != $Password) {
+if(ISSET($pwchange)) {
+  if (!ISSET($oldpw) || md5($oldpw) != $Password) {
      $msg = "Old Password does not match!!<br>\n";
   } else {
-    if (!$newpw || !$newpw2 || $newpw != $newpw2) {
+    if (!ISSET($newpw) || !ISSET($newpw2) || $newpw != $newpw2) {
       $msg = "New passwords do not match!<br>\n";
 //    } else if (ereg("\\", $n) || ereg("<", $n)) {
 //      $msg = "Illegal char &lt; or char \\<br>\n";
     } else {
       $Password = $newpw;
       setcookie("Password",md5($newpw));
-      mysql_query ("UPDATE user SET password='$newpw' ".
-		   "WHERE planet_id='$Planetid'", $db);
+      mysqli_query ($db, "UPDATE user SET password='$newpw' ".
+		   "WHERE planet_id='$Planetid'" );
       $msg = "Password successfully changed<br>\n";
     }
   }
 }
 
-if($emchange) {
-  $res = mysql_query ("SELECT email FROM user WHERE planet_id='$Planetid'", $db);
-  $row = mysql_fetch_row($res);
+if(ISSET($emchange)) {
+  $res = mysqli_query ($db, "SELECT email FROM user WHERE planet_id='$Planetid'" );
+  $row = mysqli_fetch_row($res);
 
-  if (!$oldem || $oldem != $row[0]) {
+  if (!ISSET($oldem) || $oldem != $row[0]) {
     
     $msg = "Old Email does not match!<br>\n";
   } else {
-    if (!$newem || !$newem2 || $newem != $newem2) {
+    if (!ISSET($newem) || !ISSET($newem2) || $newem != $newem2) {
       $msg = "New emails do not match !<br>\n";
     } else {
-      mysql_query ("UPDATE user SET email='$newem' ".
-		   "WHERE planet_id='$Planetid'", $db);
+      mysqli_query ($db, "UPDATE user SET email='$newem' ".
+		   "WHERE planet_id='$Planetid'" );
       $msg = "Email successfully changed<br>\n";
     }
   }
 }
 
-if ($imgset) {
+if (ISSET($imgset)) {
   if ($images == "CLEAR") {
     setcookie("imgpath","");
     $imgpath="";
@@ -206,37 +206,37 @@ if ($imgset) {
     setcookie("imgpath",$images,time()+1209600);
     $imgpath = $images;
   }
-  mysql_query ("UPDATE user set imgpath='$imgpath' ".
-               "WHERE planet_id='$Planetid'", $db);
+  mysqli_query ($db, "UPDATE user set imgpath='$imgpath' ".
+               "WHERE planet_id='$Planetid'" );
 }
 
-if ($delete) {
-  mysql_query ("UPDATE user SET delete_date=now()+INTERVAL 1 minute ".
-     "WHERE planet_id='$Planetid'",$db);
+if (ISSET($delete)) {
+  mysqli_query ($db, "UPDATE user SET delete_date=now()+INTERVAL 1 minute ".
+     "WHERE planet_id='$Planetid'");
   $msg = "!!!!!! Your account has been marked for deletion !!!!!!!!<br>".
     "If you didnt want so - just login again during next 12 hours<br><br>".
     "Close this browser window now - Good Bye";
   do_log_me(2,4,"");
 }
 
-if ($setting) {
+if (ISSET($setting)) {
   $new_setting = 0;
-  $new_setting |= ($set_1?1:0);
-  $new_setting |= ($set_2?2:0);
-  $new_setting |= ($set_4?4:0);
-  $new_setting |= ($set_8?8:0);
-  $new_setting |= ($set_16?16:0);
-  $new_setting |= ($set_32?32:0);
-  $new_setting |= ($set_64?64:0);
-  $new_setting |= ($set_128?128:0);
+  $new_setting |= (ISSET($set_1)?1:0);
+  $new_setting |= (ISSET($set_2)?2:0);
+  $new_setting |= (ISSET($set_4)?4:0);
+  $new_setting |= (ISSET($set_8)?8:0);
+  $new_setting |= (ISSET($set_16)?16:0);
+  $new_setting |= (ISSET($set_32)?32:0);
+  $new_setting |= (ISSET($set_64)?64:0);
+  $new_setting |= (ISSET($set_128)?128:0);
 
   $mysettings = $new_setting;
-  mysql_query ("UPDATE user SET settings='$mysettings' ".
-    "WHERE planet_id='$Planetid'",$db);
+  mysqli_query ($db, "UPDATE user SET settings='$mysettings' ".
+    "WHERE planet_id='$Planetid'");
 }
 
 require "header.php";
-if ($extra_header) {
+if (ISSET($extra_header)) {
   my_header($extra_header,0,0);
 } else {
   my_header("",0,0);
@@ -250,7 +250,7 @@ titlebox ("Preferences", $msg);
 
 <center>
 
-<form method="post" action="<?php echo $PHP_SELF?>">
+<form method="post" action="<?php echo $_SERVER["PHP_SELF"]?>">
 <table width="650" border="1" cellpadding="5">
 <tr><th colspan="2" class="a">Feature settings</th></tr>
 
@@ -276,7 +276,7 @@ titlebox ("Preferences", $msg);
 </form>
 <br>
 
-<form method="post" action="<?php echo $PHP_SELF?>">
+<form method="post" action="<?php echo $_SERVER["PHP_SELF"]?>">
 <table width="650" border="1" cellpadding="5">
 <tr><th colspan="2" class="a">Sleep Mode
 </th></tr>
@@ -295,8 +295,8 @@ if ($mytick > $end_of_round) {
 } else {
   $q = "SELECT UNIX_TIMESTAMP(now()) - UNIX_TIMESTAMP(last_sleep) ".
      "FROM user WHERE planet_id='$Planetid'";
-  $res = mysql_query($q, $db);
-  $row = mysql_fetch_row($res);
+  $res = mysqli_query($db, $q );
+  $row = mysqli_fetch_row($res);
   if ($row[0] < $sleep_period * 3600) {
      $next = $sleep_period * 3600 - $row[0];
      $tim = sprintf("%d hours, %d minutes and %d seconds",
@@ -316,7 +316,7 @@ if ($mytick > $end_of_round) {
 </form>
 <br>
 
-<form method="post" action="<?php echo $PHP_SELF?>">
+<form method="post" action="<?php echo $_SERVER["PHP_SELF"]?>">
 <table width="650" border="1" cellpadding="5">
 <tr><th colspan="2" class="a">Change Password</th></tr>
 <tr><td width="50%">Old Password</td>
@@ -336,16 +336,16 @@ if ($mytick > $end_of_round) {
 </form>
 <br>
 
-<form method="post" action="<?php echo $PHP_SELF?>">
+<form method="post" action="<?php echo $_SERVER["PHP_SELF"]?>">
 <table width="650" border="1" cellpadding="5">
 <tr><th colspan="2" class="a">Change Email</th></tr>
 <?php
    $q = "SELECT email FROM user WHERE planet_id='$Planetid'";
-   $res = mysql_query($q, $db);  
-   $row = mysql_fetch_row($res);
+   $res = mysqli_query($db, $q );  
+   $row = mysqli_fetch_row($res);
    if ($row[0] == 'myphppa@web.de') {
 echo <<<EOF
-<tr><td colspan="2"><span class="red"><b>PLEASE update your EMAIL!</b></span>
+<tr><td colspan="2"><span class="red"><b>PLEASE update your EMAIL! (curr: myphppa@web.de)</b></span>
     <input type="hidden" name="oldem" value="myphppa@web.de"></td></tr>
 EOF;
    } else {
@@ -370,7 +370,7 @@ EOF;
 </form>
 <br>
 
-<form method="post" action="<?php echo $PHP_SELF?>">
+<form method="post" action="<?php echo $_SERVER["PHP_SELF"]?>">
 <table width="650" border="1" cellpadding="5">
 <tr><th colspan="2" class="a">Images</th></tr>
 <tr><th align=left colspan=2>Path to images</th></tr>
@@ -398,7 +398,7 @@ Thanx to Fann for these ones
 </form>
 <br>
 
-<form method="post" action="<?php echo $PHP_SELF?>">
+<form method="post" action="<?php echo $_SERVER["PHP_SELF"]?>">
 <table width="650" border="1" cellpadding="5">
 <tr><th colspan="2" class="a">Vacation Mode</th></tr>
 <tr><td colspan="2">Vacation mode will disable your account for at least 48 Hours (not ticks!).
@@ -416,7 +416,7 @@ You cannot go into vacation if You are attacking or under attack (or defending).
 <?php
 
 echo<<<EOF
-<form method="post" action="$PHP_SELF">
+<form method="post" action="$_SERVER[PHP_SELF]">
 <table width="650" border="1" cellpadding="5">
 <tr><th class="a">Delete</th></tr>
 <tr><td>To delete your planet You have to press the delete button - 

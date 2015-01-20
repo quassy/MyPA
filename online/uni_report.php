@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,9 +25,9 @@ function get_alliance_tag($aid) {
   if ($aid == 0)
     return "";
 
-  $res = mysql_query("SELECT tag FROM alliance WHERE id='$aid'",$db);
-  if ($res && mysql_num_rows($res)>0) {
-    $row = mysql_fetch_row($res);
+  $res = mysqli_query($db, "SELECT tag FROM alliance WHERE id='$aid'");
+  if ($res && mysqli_num_rows($res)>0) {
+    $row = mysqli_fetch_row($res);
     return "$row[0]";
   } else {
     return "";
@@ -82,19 +82,19 @@ function print_universe_player_report ($db) {
   
   /* sollte aus einem file kommen */
 
-  $result = mysql_query ("SELECT leader, planetname, x, y, z, score, ".
+  $result = mysqli_query ($db, "SELECT leader, planetname, x, y, z, score, ".
 			 "metalroids+crystalroids+eoniumroids+uniniroids ".
 			 "AS roids, id, alliance_id FROM planet ".
 			 "WHERE mode != 0 ".
-			 "ORDER BY score DESC LIMIT 40 ", $db);
+			 "ORDER BY score DESC LIMIT 40 " );
 
-  if (mysql_num_rows($result) == 0) {
+  if (mysqli_num_rows($result) == 0) {
     /* empty  */
     echo "<tr><td colspan=\"6\" align=\"center\"><font color=\"red\">".
       "No rankings found</font></td></tr>\n";
   } else {
     $count = 1;
-    while ($myuni=mysql_fetch_row ($result)) {
+    while ($myuni=mysqli_fetch_row ($result)) {
       print_uni_row ($count,$myuni);
       $count += 1;
     }
@@ -110,11 +110,11 @@ function print_gal_row ($rank, $row) {
     echo "<tr>\n";
   }
 
-  $result = mysql_query ("SELECT name FROM galaxy ".
-			 "WHERE x='$row[0]' AND y='$row[1]'", $db);
+  $result = mysqli_query ($db, "SELECT name FROM galaxy ".
+			 "WHERE x='$row[0]' AND y='$row[1]'" );
 
-  if ($result && mysql_num_rows($result)) {
-    $grow = mysql_fetch_row($result);
+  if ($result && mysqli_num_rows($result)) {
+    $grow = mysqli_fetch_row($result);
     $gname = $grow[0];
   } else {
     $gname = "Far Far Away";
@@ -155,11 +155,11 @@ function get_universe_galaxy_report (&$myrank) {
      "eoniumroids + uniniroids) FROM planet WHERE mode != 0 ".
      "GROUP by x, y ORDER BY sc DESC";
 
-  $result = mysql_query ($q, $db);
+  $result = mysqli_query ($db, $q );
 
-  if (mysql_num_rows($result) > 0) {
+  if (mysqli_num_rows($result) > 0) {
     $count = 1;
-    while ($mygal=mysql_fetch_array ($result)) {
+    while ($mygal=mysqli_fetch_array ($result)) {
 
       if ($count <= 20) {
         $ret[$count] = $mygal;
@@ -203,11 +203,11 @@ function print_universe_alliance_report () {
        "FROM planet, alliance WHERE members>2 ".
        "AND alliance.id=planet.alliance_id ".
        "GROUP BY alliance.id ORDER BY a_score DESC";
-  $res = mysql_query ($q, $db);
+  $res = mysqli_query ($db, $q );
 
-  if (mysql_num_rows($res) > 0) {
+  if (mysqli_num_rows($res) > 0) {
     $rank = 1;
-    while ($row = mysql_fetch_array($res)) {
+    while ($row = mysqli_fetch_array($res)) {
       print_alliance_row ($rank, $row);
       $rank += 1;
     }

@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,10 +20,9 @@
  */
 
 function get_ip($type=0) {
-  global $HTTP_SERVER_VARS;
 
   if ($type)
-    return $HTTP_SERVER_VARS[REMOTE_ADDR];
+    return $_SERVER['REMOTE_ADDR'];
 
   $ip = getenv("HTTP_CLIENT_IP");
   if (!$ip) {
@@ -33,16 +32,14 @@ function get_ip($type=0) {
     }
   }
   if (!$ip || $ip == "unknown")
-    $ip = $HTTP_SERVER_VARS[REMOTE_ADDR];
+    $ip = $_SERVER['REMOTE_ADDR'];
 
   return $ip;
 }
 
 function get_type($type=0) {
-  global $HTTP_SERVER_VARS;
-  global $_SERVER;
 
-  return $_SERVER[HTTP_USER_AGENT];
+  return $_SERVER['HTTP_USER_AGENT'];
 
 }
 

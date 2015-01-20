@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,21 +22,21 @@
 require_once "admhead.php";
 require_once "admform.php";
 
-if ($rid) {
+if (ISSET($rid)) {
   $q = "UPDATE galaxy set pic='' WHERE id=$rid";
-  $res = mysql_query ($q, $db);
+  $res = mysqli_query ($db, $q );
   echo "Pic of [$rid] deleted<br>\n";
 }
  
   $q = "SELECT x, y, gc, pic, id FROM galaxy where pic!=''";
-  $res = mysql_query($q, $db);
+  $res = mysqli_query($db, $q );
 
-  if ($res && mysql_num_rows($res)>0) {
+  if ($res && mysqli_num_rows($res)>0) {
     echo "<center><table border=\"1\">\n";
   
-    while ($row=mysql_fetch_row($res)) {
+    while ($row=mysqli_fetch_row($res)) {
       echo "<tr><td>($row[0],$row[1])</td>\n";
-      echo "<td><a href=\"$PHP_SELF?rid=$row[4]\">Remove</a></td>\n";
+      echo "<td><a href=\"$_SERVER[PHP_SELF]?rid=$row[4]\">Remove</a></td>\n";
       echo "<td><img src=\"$row[3]\" height=\"200\"></td></tr>\n";
     }
     echo "</table>\n";

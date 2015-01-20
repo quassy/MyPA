@@ -1,0 +1,90 @@
+
+Session Handling V2 für MyPHPPa
+-------------------------------
+
+Was bisher geschah
+------------------
+
+Session-handling V1 ist ein Sessionmanagement auf cookies, ihrer 
+Lebensdauer und den darin gespeicherten Userbezogenen Daten simples 
+Authentifizierungssystem.
+Vorteil:
+- Für PHP < 4.1 einfach zu realisieren (in späteren Versionen sind cookies 
+  per default keine globalen Variablen mehr).
+Nachteil:
+- Userdaten werden im Cookie auf Clientseite abgelegt.
+- Nur Lebensdauer der Session wird DB-gestüzt auf Serverseite kontrolliert
+- Jeder Request muss im Applikationscode gegen die DB authentifiziert werden
+
+
+Wie soll es werden
+------------------
+
+Session-handling V2 soll auf dem PHP-Sessionmanagement basieren - im 
+speziellen implementiert unter PHP 5 ohne Rückwärtskompatibilität.
+
+Anforderung:
+- Keine userbezogenen Daten auf Clientseite
+- Einfache Intergration in MyPHPpa
+- Weitere sessionbezogenen Informationen innerhalb der Session (lokal) 
+  speichern
+- Vereinfachung der Request-Authentifizierung
+- Loadbalancer fähige Session
+
+Technisches Konzept
+-------------------
+Das eigentliche Session-handling wird von PHP5 übernommen; auf Clientseite 
+wird lediglich eine SessionID (per Cookie oder URL) verwaltet während das 
+Sessionmodul des Applikationscodes die lokal gehaltenen Autorisierungsdaten 
+erstellt und überprüft.
+Im ersten Schritt wird das eigentliche Sessionmodule mit Session-Datenfiles 
+unter /tmp realisiert. Später kann hierzu eine DB-basierende Methode 
+hinzukommen um die Forderung nach Rechnerübergreifenden Sessions nachzukommen.
+
+Sessiondaten:
+- PlanetId
+- Sessiontimeout (Nicht mehr DB-gestüzt)
+- ClientIP (Neu: überprüfung)
+
+Folgende Usecases sind zu berücksichtigen:
+- Login, Keine Session registriert
+  * Session erstellen
+- Login, Session regged 
+  ->  last > session-timeout ?
+    * Neue session erstellen
+  Failure
+- Pagerequest, Session
+  - Session valid ? IP korrekt ?
+    * Renew
+  Session beenden
+
+Funktionen:
+  session_init     # init (pre-)session settings
+    session_cache_expire()
+    session_start()
+
+  session_create   # create new user session
+    _find_session  # check if user has a session
+
+  session_check    # check if session is valid/alive
+    _session_ip_check # check the embedded IP versus this request
+
+  session_destroy  # destroy this session context
+
+  session_flush    # flush and close session handling for this request
+
+  # Maybe
+  session_store    # put a variable into the session
+  session_retrieve # get the data back   
+
+Prototypen:
+int session_init();
+
+int session_create();
+  int _find_session();
+
+int session_check();
+ int _session_ip_check();
+
+int session_destroy();
+void session_flush();

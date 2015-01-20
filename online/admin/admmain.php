@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,38 +30,38 @@ Choose from the menu above
 <?php
 
 $q = "SELECT count(*) FROM user";
-$res = mysql_query($q, $db);
-$rowu = mysql_fetch_row($res);
+$res = mysqli_query($db, $q );
+$rowu = mysqli_fetch_row($res);
 
 $q = "SELECT count(*) FROM planet";
-$res = mysql_query($q, $db);
-$rowp = mysql_fetch_row($res);
+$res = mysqli_query($db, $q );
+$rowp = mysqli_fetch_row($res);
 
 $gdate = date("D, d M Y H:i:s T");
 
 echo "Currently $rowu[0] users on $rowp[0] planets [$gdate]<br>";
 
 $q = "SELECT count(*) FROM planet WHERE mode=0";
-$res = mysql_query($q, $db);
-$rowm = mysql_fetch_row($res);
+$res = mysqli_query($db, $q );
+$rowm = mysqli_fetch_row($res);
 
 echo "Banned: $rowm[0] planets<br>";
 
 $q = "SELECT count(*) FROM news";
-$res = mysql_query($q, $db);
-$row = mysql_fetch_row($res);
+$res = mysqli_query($db, $q );
+$row = mysqli_fetch_row($res);
 
 echo "News: $row[0] entries<br>";
 
 $q = "SELECT count(*) FROM journal";
-$res = mysql_query($q, $db);
-$row = mysql_fetch_row($res);
+$res = mysqli_query($db, $q );
+$row = mysqli_fetch_row($res);
 
 echo "Journal: $row[0] entries<br>";
 
 $q = "SELECT count(*) FROM logging";
-$res = mysql_query($q, $db);
-$row = mysql_fetch_row($res);
+$res = mysqli_query($db, $q );
+$row = mysqli_fetch_row($res);
 
 echo "logging: $row[0] entries<br>";
 

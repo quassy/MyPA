@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ my_header($topscript);
 
 <center>
 <br>
-<img src="/img/logo.jpg" width="290" height="145">
+<img src="img/logo.jpg" width="290" height="145">
 <br><br>
 
 There seems to be an ERROR - perhaps your session timed out (30 mins)<br>

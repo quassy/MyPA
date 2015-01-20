@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,8 @@ require_once "forum.inc";
 
 $all = get_alliance();
 
+if (!ISSET($msg)) $msg = "";
+
 if ($all) {
   $fstyle = 2; // alliance
   $fid = $all["id"] + 1024;
@@ -43,7 +45,11 @@ top_header ($myrow);
 
 if ($all) {
   
-  $msg .= forum_submit ($fstyle, $fid, $fthread);
+  if (ISSET($fthread)) {
+    $msg .= forum_submit ($fstyle, $fid, $fthread);
+  } else {
+    $msg .= forum_submit ($fstyle, $fid, 0);
+  }
 
   $ftitle = forum_title ($fstyle);
 
@@ -54,7 +60,7 @@ if ($all) {
   if (!$all["status"]) {
     untrusted_msg();
   } else {
-    if ($fthread) {
+    if (ISSET($fthread)) {
       forum_show_thread ($fstyle, $fid, $fthread);
     } else {
       forum_list_thread ($fstyle, $fid);

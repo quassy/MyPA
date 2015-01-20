@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,20 +24,23 @@ function getmicrotime(){
   return ((float)$usec + (float)$sec);  
 }    
 
+import_request_variables ("GPC", "");
+
 $start_time = getmicrotime();
 
 // $dbsock = "/tmp/mysql.sock";
 // $dbuser = "mysql";
 
-$dbsock = "/var/lib/mysql/mysql.sock";
+$dbsock = "/var/run/mysql/mysql.sock";
 $dbuser = "root";
 
 $dbhost = "localhost";
+# $dbhost = "192.168.0.6";
 $dbport = "3306";
-$dbpass = "root";
+$dbpass = "passw";
 $dbname = "planetarion";
 
-$version = "0.8.15";
+$version = "0.8.16";
 $game = "MyPHPpa";
 $round = "round 01"; // used as hash against multi 
 
@@ -81,5 +84,6 @@ if ($havoc == 1) {
 
 // default settings
 $mysettings=0;
+
 
 ?>

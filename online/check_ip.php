@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,10 +24,10 @@ function check_ip($ip) {
 
   $q = "SELECT * FROM iptables WHERE ip = '$ip'";
 
-  $res = mysql_query ($q, $db);
-  if ($res && mysql_num_rows($res) > 0) {
+  $res = mysqli_query ($db, $q );
+  if ($res && mysqli_num_rows($res) > 0) {
     $q = "INSERT INTO news set planet_id=1,date=now(),type=10,text='IP check matched: $ip'";
-     mysql_query ($q, $db);
+     mysqli_query ($db, $q );
     return 0;
   }
 

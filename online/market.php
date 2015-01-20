@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -91,7 +91,7 @@ function get_market_price ($num, $price) {
       
   $q = "UPDATE planet SET metal='$myrow[metal]',crystal='$myrow[crystal]',".
        "eonium='$myrow[eonium]' where id='$Planetid'";
-  $result = mysql_query($q, $db);
+  $result = mysqli_query($db, $q );
 
   $msg .= $q . "<br>";
   return $result;
@@ -107,7 +107,7 @@ function pay_market_price ($num, $price) {
       
   $q = "UPDATE planet SET metal='$myrow[metal]',crystal='$myrow[crystal]',".
        "eonium='$myrow[eonium]' where id='$Planetid'";
-  $result = mysql_query($q, $db);
+  $result = mysqli_query($db, $q );
   return $result;
 }
 
@@ -125,11 +125,11 @@ function trade_ship_unit ($unit, $num) {
        "WHERE uc.id='$unit' AND uc.rc_id=rc.rc_id ".
        "AND rc.status=3 AND rc.planet_id='$Planetid'";
 
-  $res = mysql_query($q, $db);
+  $res = mysqli_query($db, $q );
   $msg .= $q ."<br>";
  
-  if ($res && mysql_num_rows($res) == 1) {
-    $price = mysql_fetch_row($res);
+  if ($res && mysqli_num_rows($res) == 1) {
+    $price = mysqli_fetch_row($res);
     $factor = get_factor();
     for ($i=0; $i<3; $i++) $price[$i] *= $factor;
 
@@ -147,27 +147,27 @@ function trade_ship_unit ($unit, $num) {
 	"AND units.id=fleet.fleet_id AND units.unit_id='$unit'";
 
       $msg .= $q . "<br>";
-      $res = mysql_query ($q, $db);
-      $nrow = mysql_fetch_row($res);
+      $res = mysqli_query ($db, $q );
+      $nrow = mysqli_fetch_row($res);
       $num = $nrow[0];
 
       if ($num >0) {
 
-         // mysql_query ("UPDATE market set num=num-'$num' ".
-         //   "WHERE unit_id='$unit' AND type=1", $db);
-         mysql_query ("UPDATE market set num=num+'$num' ".
-            "WHERE unit_id='$unit' AND type=1", $db);
+         // mysqli_query ($db, "UPDATE market set num=num-'$num' ".
+         //   "WHERE unit_id='$unit' AND type=1" );
+         mysqli_query ($db, "UPDATE market set num=num+'$num' ".
+            "WHERE unit_id='$unit' AND type=1" );
 
          // $msg .= "Ordering $num Units<br>";
          // pay_market_price($num, $price);
          $msg .= "Selling $num Units ($nrow[1])<br>";
          get_market_price($num, $price);
 
-         // mysql_query ("INSERT INTO units (id,num,unit_id) ".
+         // mysqli_query ($db, "INSERT INTO units (id,num,unit_id) ".
          //   "SELECT fleet_id,'$num','$unit' ".
-         //   "FROM fleet WHERE num=0 AND planet_id='$Planetid'", $db);
-         mysql_query ("UPDATE units set num=num-'$num' ".
-            "WHERE id='$nrow[1]' AND unit_id='$unit'", $db);
+         //   "FROM fleet WHERE num=0 AND planet_id='$Planetid'" );
+         mysqli_query ($db, "UPDATE units set num=num-'$num' ".
+            "WHERE id='$nrow[1]' AND unit_id='$unit'" );
 
       } else {
         $msg .= "No units available!";
@@ -197,21 +197,21 @@ function market_all($q, $qq, $name, $str_type, $qb=0)
 {
   global $Planetid, $db, $page;
 
-  $result = mysql_query ($q, $db);
-  if ($result && mysql_num_rows($result) > 0) {
+  $result = mysqli_query ($db, $q );
+  if ($result && mysqli_num_rows($result) > 0) {
 
     market_table_head($name, $qb);
 
-    while ($myunit = mysql_fetch_row($result)) {
+    while ($myunit = mysqli_fetch_row($result)) {
 
-      $nr = mysql_query ( $qq ."'$myunit[0]' AND planet_id='$Planetid'", $db);
+      $nr = mysqli_query ($db,  $qq ."'$myunit[0]' AND planet_id='$Planetid'" );
 
-      $stock = mysql_fetch_row ($nr);
+      $stock = mysqli_fetch_row ($nr);
       if ( !$stock[0]) $stock[0] = 0;
 
       if ($qb) {
-        $nr = mysql_query ( $qb ."'$myunit[0]' AND planet_id='$Planetid'", $db);
-        $base = mysql_fetch_row ($nr);
+        $nr = mysqli_query ($db,  $qb ."'$myunit[0]' AND planet_id='$Planetid'" );
+        $base = mysqli_fetch_row ($nr);
         if ( !$base[0]) $base[0] = 0;
 
         print_unit_row ($myunit, $stock[0], $str_type, $base[0]);
@@ -240,10 +240,10 @@ top_header($myrow);
 $msg = "";
 
 // rc_id=91 == Market House
-$res = mysql_query ("SELECT status FROM rc ".
-  "WHERE rc_id=91 AND status=3 AND planet_id='$Planetid'", $db);
+$res = mysqli_query ($db, "SELECT status FROM rc ".
+  "WHERE rc_id=91 AND status=3 AND planet_id='$Planetid'" );
 
-if (!$res || mysql_num_rows($res)==0) {
+if (!$res || mysqli_num_rows($res)==0) {
   $msg = "You didnt build a Trading Unit";
   $fail=1;
 } else {
@@ -294,14 +294,14 @@ if (!$fail) {
   echo <<<EOF
 <table border="1" width="650">
 <tr><th class="a">Market Place</th></tr>
-<tr><td align="center"><a href="$PHP_SELF?page=sell">Sell</a> | <a href="$PHP_SELF?page=buy">Buy</a></td></tr>
+<tr><td align="center"><a href="$_SERVER[PHP_SELF]?page=sell">Sell</a> | <a href="$_SERVER[PHP_SELF]?page=buy">Buy</a></td></tr>
 </table>
 EOF;
 
   if ($page)
-    echo "<form method=\"post\" action=\"$PHP_SELF?page=$page\">";
+    echo "<form method=\"post\" action=\"$_SERVER[PHP_SELF]?page=$page\">";
   else
-    echo "<form method=\"post\" action=\"$PHP_SELF\">";
+    echo "<form method=\"post\" action=\"$_SERVER[PHP_SELF]\">";
 
   /* ship market */
   $q = "SELECT uc.id, uc.name, uc.metal, uc.crystal, uc.eonium, m.num ".

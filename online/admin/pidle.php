@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,11 +29,11 @@ function idle_players () {
     "UNIX_TIMESTAMP(user.signup) as delta,user.last ,user.signup ".
     " from planet,user where planet_id=id and uniniroids = 3 and ".
     "metalroids=0 and crystalroids=0 order by last,signup";
-  $res = mysql_query($q, $db);
+  $res = mysqli_query($db, $q );
 
-  if (!$res || mysql_num_rows($res) == 0)
+  if (!$res || mysqli_num_rows($res) == 0)
     return;
-  while ($row=mysql_fetch_array($res)) {
+  while ($row=mysqli_fetch_array($res)) {
     echo "<tr>".
     "<td>$row[0]</td>".
     "<td><a href=\"pdelete.php?submit=1&playerid=$row[1]\">$row[1]</a></td>".

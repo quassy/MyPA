@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,10 +19,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-require "popup_header.php";
+require "popup_header.inc";
 
 require "standard.php";
-require "planet_util.php";
+require "planet_util.inc";
 require "news_util.php";
 include_once "alliance_func.inc";
 
@@ -30,22 +30,22 @@ $msg = "";
 
 $all = get_alliance ();
 
-if ($ncreate && $myrow["alliance_id"] == 0) 
+if (ISSET($ncreate) && $myrow["alliance_id"] == 0) 
   $msg .= create_alliance ($nhc, $ntag, $nname);
 
-if ($ojoin && $osecret && $osecret!="") 
+if (ISSET($ojoin) && ISSET($osecret) && $osecret!="") 
   $msg .= join_alliance ($osecret);
 
-if ($oquit)
+if (ISSET($oquit))
   $msg .= leave_alliance();
 
-if ($osec)
+if (ISSET($osec))
   $msg .= change_secret ();
 
-if ($odel) 
+if (ISSET($odel)) 
   $msg .= delete_alliance();
 
-if ($oela && $offa)
+if (ISSET($oela) && ISSET($offa))
   $msg .= elect_offa($offa);
 
 /* top table is written now */

@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -61,13 +61,13 @@ titlebox("Military Stat");
     <th>Speed</th>
 </tr>
 <?php
-$result = mysql_query("SELECT name,class,type,t1,t2,t3,init,agility,".
+$result = mysqli_query("SELECT name,class,type,t1,t2,t3,init,agility,".
 		      "weapon_speed,guns,power,armor,resistance,".
 		      "metal,crystal,eonium,build_ticks,fuel,speed ".
 		      "FROM unit_class ORDER BY id",$db);
 
-if ($result && mysql_num_rows($result) > 0) {
-  while ($row = mysql_fetch_row($result)) {
+if ($result && mysqli_num_rows($result) > 0) {
+  while ($row = mysqli_fetch_row($result)) {
     echo "<tr><td align=\"left\">$row[0]</td>\n";
     
     echo "<td>";

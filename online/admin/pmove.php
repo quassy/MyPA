@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 require_once "admhead.php";
 require_once "admform.php";
 
-require_once "../planet_util.php";
+require_once "../planet_util.inc";
 require_once "../player_move.php";
 
 function clean_galaxy ($sx, $sy) {
@@ -41,9 +41,9 @@ if ($submit) {
       echo "Move failed!!";
     }
   } elseif ($sx && $sy) {
-    $res = mysql_query ("SELECT z FROM planet WHERE x=$sx AND y=$sy", $db);
-    if ($res && mysql_num_rows($res)>0) {
-      while($row=mysql_fetch_row($res)) {
+    $res = mysqli_query ($db, "SELECT z FROM planet WHERE x=$sx AND y=$sy" );
+    if ($res && mysqli_num_rows($res)>0) {
+      while($row=mysqli_fetch_row($res)) {
         $resx = player_move ($sx, $sy, $row[0]);
         if($resx) {
           $new = get_coord_name ($resx);
@@ -58,7 +58,7 @@ if ($submit) {
 } else {
 ?>
 <center>
-<form method="post" action="<?php echo $PHP_SELF?>">
+<form method="post" action="<?php echo $_SERVER["PHP_SELF"]?>">
 <table width="650" border="1" cellpadding="10">
 <tr><th colspan="2">Wich coords do you want to move where ?</th></tr>
 <tr><td align="center">From:&nbsp;

@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,11 +27,11 @@ function pval ($val) {
 }
 
 require_once "../alliance_func.inc";
-require_once "../planet_util.php";
+require_once "../planet_util.inc";
 
 echo "<center>\n";
 
-if ($allid && $Planetid<=2) {
+if (ISSET($allid) && $Planetid<=2) {
 
   $myrow["alliance_id"] = $allid;
   $myrow["status"] = 0;
@@ -42,7 +42,7 @@ if ($allid && $Planetid<=2) {
        "<a href=\"afor.php?allid=$allid\">Forum</a><br><br>\n";
   list_alliance_members($all);
 } else {
-  $ref = "$PHP_SELF?allid=";
+  $ref = "$_SERVER[PHP_SELF]?allid=";
   list_alliances_admin($ref);
 }
 

@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,11 +30,11 @@ $q = "SELECT x,y,z, score, FLOOR((metal+crystal+eonium)*0.09) AS rc, ".
      "FLOOR(score+(metal+crystal+eonium)*0.09) AS sc ".
      "FROM planet WHERE mode!=0 ORDER BY sc DESC LIMIT 10";
 
-$result = mysql_query ($q, $db);
+$result = mysqli_query ($db, $q );
 
 echo "<center><table border=1 width=650>\n";
 echo "<tr><th>Coords</th><th>Score</th><th>ResScore</th><th>Total Score</th></tr>\n";
-while ($row=mysql_fetch_array($result)) {
+while ($row=mysqli_fetch_array($result)) {
   echo "<tr><td align=center>$row[x]:$row[y]:$row[z]</td><td align=center>". 
        pval($row["score"]) ."</td><td align=center>". pval($row["rc"]).
        "</td><td align=center>". pval($row["sc"]) ."</td></tr>\n";

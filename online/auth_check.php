@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,23 +38,23 @@ function pre_auth($Username,$Password,$Planetid,$Valid) {
 function db_auth($db,$Username,$Password,$Planetid) {
   global $mysettings;
 
-  $result = mysql_query("SELECT user.last,user.settings ".
+  $result = mysqli_query($db, "SELECT user.last,user.settings ".
                         "FROM user, planet ".
 			"WHERE  user.login='$Username' ".
 			"AND md5(user.password)='$Password' ".
 			"AND user.planet_id='$Planetid' ".
 			"AND user.planet_id = planet.id ".
 			"AND (planet.mode&0xF) = 2  ".
-			"AND now() <  user.last + INTERVAL 30 MINUTE",$db);
+			"AND now() <  user.last + INTERVAL 30 MINUTE");
 
-  if (mysql_num_rows($result) != 1) {
-    mysql_query("UPDATE user SET uptime=".
+  if (mysqli_num_rows($result) != 1) {
+    mysqli_query($db, "UPDATE user SET uptime=".
            "SEC_TO_TIME(UNIX_TIMESTAMP(last) - UNIX_TIMESTAMP(login_date) + ".
            "TIME_TO_SEC(uptime)) ".
-           "WHERE planet_id='$Planetid' AND (mode&0xF) = 2", $db);
+           "WHERE planet_id='$Planetid' AND (mode&0xF) = 2" );
 
-    mysql_query("UPDATE planet SET mode=((mode & 0xF0) + 1) ".
-		"WHERE id='$Planetid' AND (mode&0xF) = 2", $db);
+    mysqli_query($db, "UPDATE planet SET mode=((mode & 0xF0) + 1) ".
+		"WHERE id='$Planetid' AND (mode&0xF) = 2" );
     
     setcookie("Username","");
     setcookie("Password","");
@@ -62,7 +62,7 @@ function db_auth($db,$Username,$Password,$Planetid) {
     Header("Location: error.php");
     die;
   } else {
-    $row = mysql_fetch_row($result);
+    $row = mysqli_fetch_row($result);
     $mysettings = $row[1];
   } 
 }

@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,22 +22,22 @@
 require_once "admhead.php";
 require_once "admform.php";
 
-if ($submit) echo "Found submit<br>";
-if ($playerid) echo "Playerid $playerid<br>";
-if ($verification) echo "Verification: $verification<br>";
+if (ISSET($submit)) echo "Found submit<br>";
+if (ISSET($playerid)) echo "Playerid $playerid<br>";
+if (ISSET($verification)) echo "Verification: $verification<br>";
 
-if ($submit && $ip ) {
+if (ISSET($submit) && ISSET($ip) ) {
 
-  if ($verification && $verification==$ip) {
+  if (ISSET($verification) && $verification==$ip) {
       $q = "INSERT INTO iptables set ip='$ip',comment='$comment'";
-      mysql_query ($q, $db);
+      mysqli_query ($db, $q );
       echo "<center>IP banned</center>";
   } else {
       echo <<<EOF
 <center>
 <table  width="640" border="1" cellpadding="2" >
 <tr><td>Really ban this IP?</td><td><b>$ip</b></td></tr>
-<tr><td align="center"><a href="$PHP_SELF?submit=1&ip=$ip&verification=$ip">Yes</a></td></tr>
+<tr><td align="center"><a href="$_SERVER[PHP_SELF]?submit=1&ip=$ip&verification=$ip">Yes</a></td></tr>
 </table>
 
 EOF;
@@ -47,7 +47,7 @@ EOF;
 <center>
 <table  width="640" border="1" cellpadding="2" >
 <tr>
-<form method="post" action="$PHP_SELF">
+<form method="post" action="$_SERVER[PHP_SELF]">
   <td align="center" bgcolor="#c0c0c0">Enter target id:</td>
   <td align="center"><input type="text" name="ip" size="25"></td></tr>
 <tr><td colspan=2><input type="text" name="comment" size="80"></td></tr>

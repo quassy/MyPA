@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
  */
 
 require "standard.php";
-require "planet_util.php";
+require "planet_util.inc";
 
 function print_coords ($x, $y, $z) {
   return "<A HREF=\"galaxy.php?submit=1&x=$x&y=$y\">$x:$y:$z</A>";
@@ -50,22 +50,22 @@ if ($Planetid == 1) {
 
 /* protection */
 
-if ( ($myrow[mode] & 0xF0) != 0)  {
+if ( ($myrow["mode"] & 0xF0) != 0)  {
   $q = "SELECT first_tick + 72 - $mytick FROM user WHERE planet_id='$Planetid'";
 
-  $prot_res = mysql_query ($q, $db);
-  $prot_row = mysql_fetch_row ($prot_res);  
+  $prot_res = mysqli_query ($db, $q );
+  $prot_row = mysqli_fetch_row ($prot_res);  
   $protects = $prot_row[0];
 
   $system_message .= "You are under protection for the next $protects ticks.<br>";
 }
 
 /* exiling */
-$exres = mysql_query ("SELECT exile_id, date_format(exile_date,'%D %b %H:%i CEST') ".
+$exres = mysqli_query ($db, "SELECT exile_id, date_format(exile_date,'%D %b %H:%i CEST') ".
 		      "AS exile_date FROM galaxy ".
-		      "WHERE x=$myrow[x] and y=$myrow[y] AND exile_id!=0", $db);
-if ($exres && mysql_num_rows($exres)>0) {
-  $exrow =  mysql_fetch_row($exres);
+		      "WHERE x=$myrow[x] and y=$myrow[y] AND exile_id!=0" );
+if ($exres && mysqli_num_rows($exres)>0) {
+  $exrow =  mysqli_fetch_row($exres);
     $system_message .= "There is an <a href=\"affairs.php\"><b>exile vote</b></a> ".
        "running until $exrow[1]";
   if ($exrow[0] == $Planetid) {
@@ -83,10 +83,10 @@ $q = "SELECT rc_class.name, rc_class.type,rc_build.build_ticks ".
   "FROM rc_build,rc_class ".
   "WHERE rc_build.planet_id='$Planetid' AND rc_build.rc_id=rc_class.id";
 
-$res = mysql_query ($q, $db);
+$res = mysqli_query ($db, $q );
 
-if ($res && mysql_num_rows ($res)>0) {
-  while ($row = mysql_fetch_row ($res)) {
+if ($res && mysqli_num_rows ($res)>0) {
+  while ($row = mysqli_fetch_row ($res)) {
     if ($row[1] == 1) {
       $system_message .= "Construction of <b>$row[0]</b>";
     } else {
@@ -100,12 +100,12 @@ if ($res && mysql_num_rows ($res)>0) {
 $q = "SELECT target_id, num, ticks, type FROM fleet ".
      "WHERE planet_id='$Planetid' AND num>0 AND (ticks!=0 OR full_eta!=0) ".
      "ORDER by num";
-$res = mysql_query ($q, $db);
+$res = mysqli_query ($db, $q );
 
-if ($res && mysql_num_rows ($res)>0) {
+if ($res && mysqli_num_rows ($res)>0) {
 
   $system_message .= "<br>";
-  while ($row = mysql_fetch_row ($res)) {
+  while ($row = mysqli_fetch_row ($res)) {
     $rowt = get_coord_name ($row[0]);
 
     if ($row[1] ==  $number_of_fleets) {
@@ -145,13 +145,13 @@ $q = "SELECT fleet_id, planet_id, type, ticks, num FROM fleet ".
      "WHERE target_id='$Planetid' AND (ticks!=0 OR full_eta!=0) ".
      "ORDER by type, ticks ASC";
 
-$res = mysql_query ($q, $db);
+$res = mysqli_query ($db, $q );
 
-if ($res && mysql_num_rows ($res)>0) {
+if ($res && mysqli_num_rows ($res)>0) {
   require "fleet_util.php";
 
   $system_message .= "<br>";
-  while ($row = mysql_fetch_row ($res)) {
+  while ($row = mysqli_fetch_row ($res)) {
 
      $fsum = fetch_fleet_sum ($row[0]);
      $fowner = get_coord_name ($row[1]);
@@ -210,7 +210,7 @@ if ($res && mysql_num_rows ($res)>0) {
 if ($system_message!="") {
 ?>
 <table width="650" border="1" cellpadding="5" >
-<tr><th class="a"">System Message</th></tr>
+<tr><th class="a">System Message</th></tr>
 <tr><td><?php echo $system_message ?></td></tr>
 </table>
 <br>
@@ -223,11 +223,11 @@ if ($system_message!="") {
 <tr><td>
 <?php
 
-$result = mysql_query ("SELECT text,gc FROM galaxy ".
-		       "WHERE x='$myrow[x]' AND y='$myrow[y]'", $db);
+$result = mysqli_query ($db, "SELECT text,gc FROM galaxy ".
+		       "WHERE x='$myrow[x]' AND y='$myrow[y]'");
 
-if ($result && mysql_num_rows($result)) {
-  $grow = mysql_fetch_row($result);
+if ($result && mysqli_num_rows($result)) {
+  $grow = mysqli_fetch_row($result);
 
   if ($grow[0]) {
     // $text = ereg_replace ("\n", "<br>", $grow[0]);
@@ -265,9 +265,9 @@ $q = "SELECT unit_class.name, sum(units.num) FROM fleet, units, unit_class ".
   "WHERE fleet.planet_id='$Planetid' AND fleet.fleet_id=units.id ".
   "AND unit_class.id=units.unit_id GROUP BY units.unit_id";
 
-$unit_res = mysql_query ($q, $db);
+$unit_res = mysqli_query ($db, $q );
 
-if ($unit_res && mysql_num_rows ($unit_res) > 0) {
+if ($unit_res && mysqli_num_rows ($unit_res) > 0) {
 
   echo "<br>\n";
 
@@ -275,7 +275,7 @@ if ($unit_res && mysql_num_rows ($unit_res) > 0) {
   $table = "";
   $row_counter = 0;
 
-  while ($unit_row = mysql_fetch_row ($unit_res)) {
+  while ($unit_row = mysqli_fetch_row ($unit_res)) {
     if ( ($row_counter % 2) == 0) $table .= "<tr>";
     $table .= "<td width=\"25%\">$unit_row[0]</td>" .
               "<td width=\"15%\" align=\"right\">$unit_row[1]</td>";
@@ -300,9 +300,9 @@ $q = "SELECT unit_class.name, sum(pds.num) FROM pds, unit_class ".
   "AND unit_class.id=pds.pds_id AND pds.num>0 and unit_class.class=5 ".
   "GROUP BY pds.pds_id";
 
-$pds_res = mysql_query ($q, $db);
+$pds_res = mysqli_query ($db, $q );
 
-if ($pds_res && mysql_num_rows ($pds_res) > 0) {
+if ($pds_res && mysqli_num_rows ($pds_res) > 0) {
 
   echo "<br>\n";
 
@@ -310,7 +310,7 @@ if ($pds_res && mysql_num_rows ($pds_res) > 0) {
   $table = "";
   $row_counter = 0;
 
-  while ($pds_row = mysql_fetch_row ($pds_res)) {
+  while ($pds_row = mysqli_fetch_row ($pds_res)) {
     if ( ($row_counter % 2) == 0) $table .= "<tr>";
     $table .= "<td width=\"25%\">$pds_row[0]</td>" .
               "<td width=\"15%\" align=\"right\">$pds_row[1]</td>";

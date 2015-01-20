@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,10 +54,10 @@ function prod_unit ($unit, $num) {
      "FROM unit_class AS uc, rc WHERE uc.id='$unit' AND uc.class=5 ".
      "AND rc.rc_id=uc.rc_id AND rc.status=3 AND rc.planet_id='$Planetid'";
 
-  $res = mysql_query ($q, $db);
+  $res = mysqli_query ($db, $q );
   // echo $q;
-  if ($res && mysql_num_rows($res) == 1) {
-    $price = mysql_fetch_row($res);
+  if ($res && mysqli_num_rows($res) == 1) {
+    $price = mysqli_fetch_row($res);
     
     if ( $myrow["metal"] < ($price[0] * $num) ) {
       $num = (int) ($myrow["metal"] / $price[0]);
@@ -80,27 +80,27 @@ function prod_unit ($unit, $num) {
       $q = "UPDATE planet SET metal='$myrow[metal]',crystal='$myrow[crystal]',".
 	   "eonium='$myrow[eonium]' where id='$Planetid' ".
            "AND metal>='$cm' AND crystal>='$cc' AND eonium>='$ce'";
-      $result = mysql_query( $q, $db);
+      $result = mysqli_query($db,  $q );
 
-      if (mysql_affected_rows($db)==1) {
-        $res = mysql_query ("INSERT INTO pds_build ".
+      if (mysqli_affected_rows($db)==1) {
+        $res = mysqli_query ($db, "INSERT INTO pds_build ".
 	  		    "SET planet_id='$Planetid',pds_id='$unit',".
-			    "build_ticks=$price[3], num=$num", $db);
+			    "build_ticks=$price[3], num=$num" );
       }
     }
   }
 }
 
-if ($submit) {
+if (ISSET($submit)) {
 
   /* aeusserst uncooles handling */
-  if ($pds_20) prod_unit (20, $pds_20);
-  if ($pds_21) prod_unit (21, $pds_21);
-  if ($pds_22) prod_unit (22, $pds_22);
-  if ($pds_23) prod_unit (23, $pds_23);
-  if ($pds_24) prod_unit (24, $pds_24);
-  if ($pds_25) prod_unit (25, $pds_25);
-  if ($pds_27) prod_unit (27, $pds_27);
+  if (ISSET($pds_20)) prod_unit (20, $pds_20);
+  if (ISSET($pds_21)) prod_unit (21, $pds_21);
+  if (ISSET($pds_22)) prod_unit (22, $pds_22);
+  if (ISSET($pds_23)) prod_unit (23, $pds_23);
+  if (ISSET($pds_24)) prod_unit (24, $pds_24);
+  if (ISSET($pds_25)) prod_unit (25, $pds_25);
+  if (ISSET($pds_27)) prod_unit (27, $pds_27);
 }
 
 /* top table is written now */
@@ -110,7 +110,7 @@ titlebox("PDS");
 ?>
 
 <center>
-<form method="post" action="<?php echo $PHP_SELF?>">
+<form method="post" action="<?php echo $_SERVER["PHP_SELF"]?>">
 <table border="1" width="650">
 <tr><th colspan="5" class="a">Order PDS component</th></tr>
 <tr><th width="110">PDS</th>
@@ -127,14 +127,14 @@ $q = "SELECT uc.id, uc.name, uc.description, uc.metal, uc.crystal, ".
      "WHERE rc.planet_id='$Planetid' AND rc.status=3 AND ".
      "uc.rc_id=rc.rc_id AND uc.class=5 ";
 
-$result = mysql_query ($q, $db);
-if ($result && mysql_num_rows($result) > 0) {
+$result = mysqli_query ($db, $q );
+if ($result && mysqli_num_rows($result) > 0) {
 
-  while ($myunit = mysql_fetch_row($result)) {
+  while ($myunit = mysqli_fetch_row($result)) {
 
-    $nr = mysql_query ("SELECT num FROM pds WHERE ".
-		       "planet_id='$Planetid' AND pds_id='$myunit[0]'", $db);
-    $stock = mysql_fetch_row ($nr);
+    $nr = mysqli_query ($db, "SELECT num FROM pds WHERE ".
+		       "planet_id='$Planetid' AND pds_id='$myunit[0]'" );
+    $stock = mysqli_fetch_row ($nr);
     if ( !$stock[0]) $stock[0] = 0;
 
     print_unit_row ($myunit, $stock[0]);
@@ -171,13 +171,13 @@ $qq = "SELECT pds_id, sum(num), build_ticks FROM pds_build ".
       "WHERE planet_id='$Planetid' ".
       "AND build_ticks!=0 GROUP BY pds_id, build_ticks";
 
-$result = mysql_query ($q, $db);
-if ($result && mysql_num_rows($result) > 0) {
+$result = mysqli_query ($db, $q );
+if ($result && mysqli_num_rows($result) > 0) {
 
-  $prod_res = mysql_query ($qq, $db);
-  $mybuild = mysql_fetch_row($prod_res);
+  $prod_res = mysqli_query ($db, $qq );
+  $mybuild = mysqli_fetch_row($prod_res);
 
-  while ($myunit = mysql_fetch_row($result)) {
+  while ($myunit = mysqli_fetch_row($result)) {
     /* name of it */
     echo "<tr><td>$myunit[1]</td>";
 
@@ -187,7 +187,7 @@ if ($result && mysql_num_rows($result) > 0) {
 	if ( $mybuild && $i == $mybuild[2] && $mybuild[0] == $myunit[0]) {
 	  /* in bau */
 	  echo "<td>$mybuild[1]</td>";
-	  $mybuild = mysql_fetch_row($prod_res);
+	  $mybuild = mysqli_fetch_row($prod_res);
 	} else {
 	  echo "<td>&nbsp;</td>";
 	}

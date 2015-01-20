@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,10 +26,10 @@ require_once "../create_user.php";
 function create_gal ($x, $y) {
   global $db;
 
-  $result = mysql_query ("SELECT id FROM galaxy WHERE x='$x' AND y='$y'", $db);
+  $result = mysqli_query ($db, "SELECT id FROM galaxy WHERE x='$x' AND y='$y'" );
 
-  if ($result && (mysql_num_rows($result) == 0)) {
-    $result = mysql_query ("INSERT INTO galaxy set x='$x',y='$y'", $db);
+  if ($result && (mysqli_num_rows($result) == 0)) {
+    $result = mysqli_query ($db, "INSERT INTO galaxy set x='$x',y='$y'" );
   }
 }
 
@@ -40,7 +40,7 @@ function trunc_table ($table) {
   if (file_exists('/tmp/ticker.run') || $table=="") {
     echo "<b>Cant do that now!</b><br>";
   } else {
-    $result = mysql_query ("TRUNCATE TABLE $dbname.$table", $db);
+    $result = mysqli_query ($db, "TRUNCATE TABLE $dbname.$table" );
     if ($result) echo "truncated $table...<br>\n"; 
   }
 }
@@ -48,44 +48,44 @@ function trunc_table ($table) {
 function create_admin () {
   global $db;
 
-  $result = mysql_query("INSERT into user ".
-                        "SET login='admin',password='admin'," .
-                        "email='myphppa@web.de',planet_id='1'",$db);
+  $result = mysqli_query($db, "INSERT into user ".
+                        "SET login='admin',password='admin4'," .
+                        "email='myphppa@web.de',planet_id='1'");
   if (!$result) {
     echo "Failed to insert admin<br>";
     return;
   }
-  $result = mysql_query("INSERT into user ".
-                        "SET login='moderator',password='moderator'," .
-                        "email='myphppa@web.de',planet_id='2'",$db);
+  $result = mysqli_query($db, "INSERT into user ".
+                        "SET login='moderator',password='moderator4'," .
+                        "email='myphppa@web.de',planet_id='2'");
   if (!$result) {
     echo "Failed to insert moderator<br>";
     return;
   }
 
-  $result = mysql_query("INSERT into planet set planetname='here'," .
-                        "leader='Admin',mode=0xF2,x=1,y=1,z=1", $db);
-  $planet_id = mysql_insert_id ($db);
+  $result = mysqli_query($db, "INSERT into planet set planetname='here'," .
+                        "leader='Admin',mode=0xF2,x=1,y=1,z=1" );
+  $planet_id = mysqli_insert_id ($db);
 
   /* signup date, first tick */
-  $result = mysql_query("UPDATE user SET planet_id='$planet_id',".
+  $result = mysqli_query($db, "UPDATE user SET planet_id='$planet_id',".
                         "signup=NOW(),first_tick=0,last=NOW() WHERE ".
-                        "login='admin' AND password='admin'", $db);
+                        "login='admin' AND password='admin'" );
 
   create_user ($planet_id);
 
-  $result = mysql_query("INSERT into planet set planetname='the game'," .
-                        "leader='Moderator',mode=0xF2,x=1,y=1,z=2", $db);
-  $planet_id = mysql_insert_id ($db);
+  $result = mysqli_query($db, "INSERT into planet set planetname='the game'," .
+                        "leader='Moderator',mode=0xF2,x=1,y=1,z=2" );
+  $planet_id = mysqli_insert_id ($db);
 
   /* signup date, first tick */
-  $result = mysql_query("UPDATE user SET planet_id='$planet_id',".
+  $result = mysqli_query($db, "UPDATE user SET planet_id='$planet_id',".
                         "signup=NOW(),first_tick=0,last=NOW() WHERE ".
-                        "login='moderator' AND password='moderator'", $db);
+                        "login='moderator' AND password='moderator'" );
   create_user ($planet_id);
 
-  $result = mysql_query("UPDATE galaxy SET members=2, name='My Galaxy' ".
-                        "WHERE id=1", $db);
+  $result = mysqli_query($db, "UPDATE galaxy SET members=2, name='My Galaxy' ".
+                        "WHERE id=1" );
 
 }
 ?>
@@ -95,7 +95,7 @@ function create_admin () {
 
 <?php
 
-if ($submit) {
+if (ISSET($submit)) {
   trunc_table ("fleet");
   trunc_table ("fleet_cap");
   trunc_table ("galaxy");
@@ -120,7 +120,7 @@ if ($submit) {
   trunc_table ("logging");
   trunc_table ("general");
 
-  $result = mysql_query ("INSERT INTO general set tick=0", $db);
+  $result = mysqli_query ($db, "INSERT INTO general set tick=0" );
   if ($result)
     echo "reset ticks to 0...<br>\n";
 
@@ -138,7 +138,7 @@ if ($submit) {
 } else {
 ?>
 <center>
-<form method="post" action="<?php echo $PHP_SELF?>">
+<form method="post" action="<?php echo $_SERVER["PHP_SELF"]?>">
 <table width="650" border="1" cellpadding="10">
 <tr><th>You really want to recreate theuniverse ?<br>
 You will have to signup again after this</th></tr>

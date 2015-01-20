@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-require_once "../popup_header.php";
+require_once "../popup_header.inc";
 require_once "admhead.php";
 require_once "admform.php";
 require_once "../res_calc.php";
@@ -29,18 +29,17 @@ function pval ($val) {
 }
 
 function print_list_row ($row) {
-  global $PHP_SELF;
 
   echo "<tr>";
   echo "<td>$row[login]</td>";
   echo "<td>$row[password]</td>";
   echo "<td>$row[ip]</td>";
-  echo "<td><a href=\"$PHP_SELF?submit=1&playerid=$row[id]\">$row[leader]</a></td>";
-  if ($row[mode]==0) {
+  echo "<td><a href=\"$_SERVER[PHP_SELF]?submit=1&playerid=$row[id]\">$row[leader]</a></td>";
+  if ($row["mode"]==0) {
     echo "<td><strike>$row[planetname]</strike>";
   } else {
     echo "<td>$row[planetname]";
-    switch ($row[mode]) {
+    switch ($row["mode"]) {
 	case 242:	echo "*"; break;
 	case 2:	echo "*"; break;
 	case 4: echo "#"; break;
@@ -51,12 +50,12 @@ function print_list_row ($row) {
   echo "<td>$row[id]</td></tr>";
 }
 
-if ($submit && $playerid && $playerid !="") {
+if (ISSET($submit) && ISSET($playerid) && $playerid !="") {
   $q = "SELECT leader FROM planet  WHERE id='$playerid'";
-  $result = mysql_query ($q, $db);
+  $result = mysqli_query ($db, $q );
 
-  if ($result && mysql_num_rows($result) > 0) {
-    $row = mysql_fetch_row($result);
+  if ($result && mysqli_num_rows($result) > 0) {
+    $row = mysqli_fetch_row($result);
     $id = $playerid;
     $pleader = $row[0];
   } else {
@@ -71,7 +70,7 @@ if ($submit && $playerid && $playerid !="") {
 
 <table  width="700" border="1" cellpadding="2" >
 <tr>
-<form method="post" action="<?php echo $PHP_SELF?>">
+<form method="post" action="<?php echo $_SERVER["PHP_SELF"]?>">
   <td align="center" class="a">Enter target leader:</td>
   <td><input type="text" name="playerid" size="25"></td>
   <td colspan="2"><input type=submit value="  Search  " name=submit></td>
@@ -85,7 +84,7 @@ if ($submit && $playerid && $playerid !="") {
 
 if ($id <0) {
 
-  if ($order && $order!="") {
+  if (ISSET($order) && $order!="") {
     if ($order == "coords") $order = "x,y,z";
 
     $q = "SELECT login, password, ip, leader, planetname, x, y, z, id, mode ".
@@ -95,20 +94,20 @@ if ($id <0) {
     $q = "SELECT login, password, ip, leader, planetname, x, y, z, id, mode ".
          "FROM user, planet WHERE planet_id=id order by x,y,z";
   }
-  $result = mysql_query ($q, $db);
+  $result = mysqli_query ($db, $q );
 
-  if ($result && mysql_num_rows($result) > 0) {
+  if ($result && mysqli_num_rows($result) > 0) {
     echo "<table width=\"700\" border=\"1\" cellpadding=\"2\">".
       "<tr class=\"a\"><th align=\"center\" colspan=\"7\">Global Message Options</th></tr>";
-    echo "<tr><th><a href=\"$PHP_SELF?order=login\">login</a></th>".
-	"<th><a href=\"$PHP_SELF?order=password\">password</a></th>".
-	"<th><a href=\"$PHP_SELF?order=ip\">ip</a></th>".
-	"<th><a href=\"$PHP_SELF?order=leader\">leader</a></th>".
-    	"<th><a href=\"$PHP_SELF?order=planetname\">planetname</a></th>".
-	"<th><a href=\"$PHP_SELF?order=coords\">coords</a></th>".
-	"<th><a href=\"$PHP_SELF?order=id\">id</a></th></tr>";
+    echo "<tr><th><a href=\"$_SERVER[PHP_SELF]?order=login\">login</a></th>".
+	"<th><a href=\"$_SERVER[PHP_SELF]?order=password\">password</a></th>".
+	"<th><a href=\"$_SERVER[PHP_SELF]?order=ip\">ip</a></th>".
+	"<th><a href=\"$_SERVER[PHP_SELF]?order=leader\">leader</a></th>".
+    	"<th><a href=\"$_SERVER[PHP_SELF]?order=planetname\">planetname</a></th>".
+	"<th><a href=\"$_SERVER[PHP_SELF]?order=coords\">coords</a></th>".
+	"<th><a href=\"$_SERVER[PHP_SELF]?order=id\">id</a></th></tr>";
 
-    while ($row=mysql_fetch_array($result)) {
+    while ($row=mysqli_fetch_array($result)) {
       print_list_row ($row);
     }
 
@@ -129,10 +128,10 @@ if ($id <0) {
        "uptime ".
        "FROM user, planet WHERE planet_id='$id' AND id=planet_id";
 
-  $result = mysql_query ($q, $db);
+  $result = mysqli_query ($db, $q );
 
-  if ($result && mysql_num_rows($result) > 0) {
-    $row=mysql_fetch_array($result);
+  if ($result && mysqli_num_rows($result) > 0) {
+    $row=mysqli_fetch_array($result);
 
     echo "<table width=\"650\" border=\"1\" cellpadding=\"2\">".
       "<tr class=\"a\"><th align=\"center\" colspan=\"2\">".
@@ -144,10 +143,10 @@ if ($id <0) {
     echo "<tr><td>Planetname</td><td>$row[planetname]</td></tr>";
     echo "<tr><td>Coords</td><td>$row[x]:$row[y]:$row[z]</td></tr>";
     echo "<tr><td>Alliance</td><td>";
-    if ($row[alliance_id]==0) echo "None";
+    if ($row["alliance_id"]==0) echo "None";
     else {
-      $r = mysql_query ("SELECT tag FROM alliance WHERE id=$row[alliance_id]",$db);
-      $ro=mysql_fetch_array($r);
+      $r = mysqli_query ($db, "SELECT tag FROM alliance WHERE id=$row[alliance_id]");
+      $ro=mysqli_fetch_array($r);
       echo "[<a href=\"aalist.php?allid=$row[alliance_id]\">$ro[0]</a>]";
     }
     echo "</td></tr>";
@@ -157,10 +156,10 @@ if ($id <0) {
     echo "<tr><td>Image path</td><td>$row[uimg]</td></tr>";
     echo "<tr><td>Last Post</td><td>$row[upost] ($row[uerr] errors)</td></tr>";
     echo "<tr><td>Mode</td>";
-    if($row[del] == 1) {
+    if($row["del"] == 1) {
        echo "<td>deleted: $row[deldate] + 12 hours</td>";
     } else {
-       switch ($row[mode] & 0xF) {
+       switch ($row["mode"] & 0xF) {
         case 0: echo "<td>banned</td>"; break;
         case 1: echo "<td>offline</td>"; break;
         case 2: echo "<td>online</td>"; break;
@@ -169,7 +168,7 @@ if ($id <0) {
        }
     }
     echo "<tr><td>Last login</td><td>$row[login_date]</td></tr>";
-    if (($row[mode] & 0xF) != 2) {
+    if (($row["mode"] & 0xF) != 2) {
       echo "<tr><td>Uptime</td><td>$row[uptime]</td></tr>";
     } else {
       echo "<tr><td>Uptime</td><td>$row[uptime] + $row[upnow]";
@@ -183,14 +182,14 @@ if ($id <0) {
 
     $inc = get_planet_income();
     echo "<tr><td>Income</td><td>".
-      (calc_per_roid ($row[metalroids],$row[roid_modifier]) + $inc[0]) . " M : ".
-      (calc_per_roid ($row[crystalroids],$row[roid_modifier]) + $inc[1]) . " C : ".
-      (calc_per_roid ($row[eoniumroids],$row[roid_modifier]) +$inc[2]) . " E</td></tr>";
-    echo "<tr><td>Resources</td><td>". pval($row[metal]) . " M , ".
-         pval($row[crystal]) . " C, ". pval($row[eonium]) . " E</td></tr>";
+      (calc_per_roid ($row["metalroids"],$row["roid_modifier"]) + $inc[0]) . " M : ".
+      (calc_per_roid ($row["crystalroids"],$row["roid_modifier"]) + $inc[1]) . " C : ".
+      (calc_per_roid ($row["eoniumroids"],$row["roid_modifier"]) +$inc[2]) . " E</td></tr>";
+    echo "<tr><td>Resources</td><td>". pval($row["metal"]) . " M , ".
+         pval($row["crystal"]) . " C, ". pval($row["eonium"]) . " E</td></tr>";
     echo "<tr><td>IP</td><td>$row[ip]</td></tr>";
-    if ($row[ip] != "")
-      echo "<tr><td>Hostname</td><td>".gethostbyaddr($row[ip])."</td></tr>";
+    if ($row["ip"] != "")
+      echo "<tr><td>Hostname</td><td>".gethostbyaddr($row["ip"])."</td></tr>";
     else
       echo "<tr><td>Hostname</td><td></td></tr>";
     echo "<tr><td colspan=2 align=center>".
@@ -199,7 +198,7 @@ if ($id <0) {
       "<a href=\"pnews.php?submit=1&playerid=$row[id]\">News</a> | ".
       "<a href=\"pmail.php?submit=1&playerid=$row[id]\">Mail</a> | ".
       "<a href=\"pdelete.php?submit=1&playerid=$row[id]\">Delete</a> | ";
-    if ($row[mode] == 0) {
+    if ($row["mode"] == 0) {
       echo "<a href=\"punban.php?submit=1&playerid=$row[id]\">UnBan</a> | ";
     } else {
       echo "<a href=\"pban.php?submit=1&playerid=$row[id]\">Ban</a> | ";

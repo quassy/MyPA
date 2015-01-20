@@ -1,0 +1,35 @@
+
+Ticker start: Sun Oct 21 21:00:22 2007
+Error connecting: Can't connect to local MySQL server through socket '/var/run/mysql/mysql.sock' (2)
+
+Ticker start: Sun Oct 21 21:01:01 2007
+Error connecting: Can't connect to local MySQL server through socket '/var/lib/mysql/mysql.sock' (2)
+
+Ticker start: Sun Oct 21 21:01:48 2007
+[1] update_build
+[1] move_fleets
+   ****: 0 s 008 ms
+[1] calc_battles
+[4] get_unit_class
+[3] calc_battles - got units
+   ****: 0 s 010 ms
+[1] update_research 1
+[1] get_rc_class
+[1] update_research end
+   ****: 0 s 012 ms
+[1] update_resources
+   ****: 0 s 061 ms
+[1] calc_score
+   ****: 0 s 000 ms
+   ****: 0 s 001 ms
+   ****: 0 s 001 ms
+   ****: 0 s 002 ms
+[2] calc_score selects
+   ****: 0 s 002 ms
+[2] calc_score end
+   ****: 0 s 003 ms
+   ****: 0 s 064 ms
+[1] do_clean_ups
+   ****: 0 s 068 ms
+Ticker end  : Sun Oct 21 21:01:48 2007
+Runtime: 0 s 068 ms

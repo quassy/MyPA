@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
  */
 
 require "standard.php";
-require "planet_util.php";
+require "planet_util.inc";
 
 /* top table is written now */
 
@@ -34,9 +34,9 @@ titlebox("Statistics");
 $q = "SELECT name,SUM(num) FROM unit_class, units ".
 "WHERE units.unit_id=unit_class.id GROUP BY units.unit_id";
 
-$unit_res = mysql_query ($q, $db);
+$unit_res = mysqli_query ($db, $q );
 
-if ($unit_res && mysql_num_rows ($unit_res) > 0) {
+if ($unit_res && mysqli_num_rows ($unit_res) > 0) {
 
   echo "<br>\n";
 
@@ -44,7 +44,7 @@ if ($unit_res && mysql_num_rows ($unit_res) > 0) {
   $table = "";
   $row_counter = 0;
 
-  while ($unit_row = mysql_fetch_row ($unit_res)) {
+  while ($unit_row = mysqli_fetch_row ($unit_res)) {
     if ( ($row_counter % 2) == 0) $table .= "<tr>";
     $table .= "<td width=\"20%\">$unit_row[0]</td>" .
               "<td width=\"20%\" align=\"right\">".pval($unit_row[1])."</td>";
@@ -68,9 +68,9 @@ $q = "SELECT name,SUM(num) FROM unit_class, pds ".
      "WHERE pds.pds_id=unit_class.id AND unit_class.class=5 ".
      "GROUP BY pds.pds_id";
 
-$pds_res = mysql_query ($q, $db);
+$pds_res = mysqli_query ($db, $q );
 
-if ($pds_res && mysql_num_rows ($pds_res) > 0) {
+if ($pds_res && mysqli_num_rows ($pds_res) > 0) {
 
   echo "<br>\n";
 
@@ -78,7 +78,7 @@ if ($pds_res && mysql_num_rows ($pds_res) > 0) {
   $table = "";
   $row_counter = 0;
 
-  while ($pds_row = mysql_fetch_row ($pds_res)) {
+  while ($pds_row = mysqli_fetch_row ($pds_res)) {
     if ( ($row_counter % 2) == 0) $table .= "<tr>";
     $table .= "<td width=\"20%\">$pds_row[0]</td>" .
               "<td width=\"20%\" align=\"right\">".pval($pds_row[1])."</td>";
@@ -102,12 +102,12 @@ if ($pds_res && mysql_num_rows ($pds_res) > 0) {
 $q = "SELECT SUM(metalroids),SUM(crystalroids),SUM(eoniumroids),".
      "SUM(uniniroids) FROM planet";
 
-$roid_res = mysql_query ($q, $db);
+$roid_res = mysqli_query ($db, $q );
 
-if ($roid_res && mysql_num_rows ($roid_res) > 0) {
+if ($roid_res && mysqli_num_rows ($roid_res) > 0) {
 
   echo "<br>\n";
-  $roid_row = mysql_fetch_row ($roid_res);
+  $roid_row = mysqli_fetch_row ($roid_res);
 
   $total = $roid_row[0] + $roid_row[1] + $roid_row[2]  
          + $roid_row[3];
@@ -132,12 +132,12 @@ if ($roid_res && mysql_num_rows ($roid_res) > 0) {
 $q = "SELECT SUM(metal),SUM(crystal),SUM(eonium) ".
      "FROM planet";
 
-$res_res = mysql_query ($q, $db);
+$res_res = mysqli_query ($db, $q );
 
-if ($res_res && mysql_num_rows ($res_res) > 0) {
+if ($res_res && mysqli_num_rows ($res_res) > 0) {
 
   echo "<br>\n";
-  $res_row = mysql_fetch_row ($res_res);
+  $res_row = mysqli_fetch_row ($res_res);
 
   $total = $res_row[0] + $res_row[1] + $res_row[2];
 
@@ -163,18 +163,18 @@ $defends = 0;
 $q = "SELECT count(*) FROM logging WHERE class=4 AND type=2 ".
      "AND NOW() - INTERVAL 1 HOUR  < stamp";
 
-$res = mysql_query ($q, $db);
-if ($res && mysql_num_rows ($res) > 0) {
-  $row = mysql_fetch_row ($res);
+$res = mysqli_query ($db, $q );
+if ($res && mysqli_num_rows ($res) > 0) {
+  $row = mysqli_fetch_row ($res);
   $attacks = $row[0];
 }
 
 $q = "SELECT count(*) FROM logging WHERE class=4 AND type=4 ".
      "AND NOW() - INTERVAL 1 HOUR  < stamp";
 
-$res = mysql_query ($q, $db);
-if ($res && mysql_num_rows ($res) > 0) {
-  $row = mysql_fetch_row ($res);
+$res = mysqli_query ($db, $q );
+if ($res && mysqli_num_rows ($res) > 0) {
+  $row = mysqli_fetch_row ($res);
   $defends = $row[0];
 }
 

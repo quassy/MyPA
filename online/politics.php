@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,13 +26,18 @@ require_once "planet_util.inc";
 require_once "forum.inc";
 
 $fstyle = 1; // politics
-$fid = get_galaxy_id($myrow[x], $myrow[y]);
+$fid = get_galaxy_id($myrow["x"], $myrow["y"]);
 
+if (!ISSET($msg)) $msg = "";
 $msg .= forum_init ($fstyle, $fid);
 
 top_header ($myrow);
 
-$msg .= forum_submit ($fstyle, $fid, $fthread);
+if (ISSET($fthread)) {
+  $msg .= forum_submit ($fstyle, $fid, $fthread);
+} else {
+  $msg .= forum_submit ($fstyle, $fid, 0);
+}
 
 $ftitle = forum_title ($fstyle);
 
@@ -40,7 +45,7 @@ titlebox ($ftitle, $msg);
 
 echo "<center>\n";
 
-if ($fthread) {
+if (ISSET($fthread)) {
   forum_show_thread ($fstyle, $fid, $fthread);
 } else {
   forum_list_thread ($fstyle, $fid);

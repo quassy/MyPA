@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,24 +31,25 @@ $mysettings=0;
 require_once "../forum.inc";
 
 
-if ($fthread && $Planetid<=2) {
-  $res = mysql_query("SELECT gal_id FROM politics ".
-        "WHERE id='$fthread'", $db);
-  $row = mysql_fetch_row($res);
+if (ISSET($fthread) && $Planetid<=2) {
+  $res = mysqli_query($db, "SELECT gal_id FROM politics ".
+        "WHERE id='$fthread'" );
+  $row = mysqli_fetch_row($res);
   $galid = $row[0];
 }
 
 echo "<center>\n";
 
-if ($galid && $Planetid<=2) {
+if (ISSET($galid) && $Planetid<=2) {
 
+  // buggy. need $myrow[x] / [y] to be from gal.
 
   $fstyle = 1; 
   forum_init ($fstyle, $galid);
 
   forum_submit ($fstyle, $galid, $fthread);
 
-  if ($fthread) {
+  if (ISSET($fthread)) {
       forum_show_thread ($fstyle, $galid, $fthread);
   } else {
       forum_list_thread ($fstyle, $galid);
@@ -58,8 +59,8 @@ if ($galid && $Planetid<=2) {
 } else {
   $q = "SELECT x,y,name,id,members FROM galaxy ".
        "WHERE members>0 ORDER by x,y";
-  $res = mysql_query ($q, $db);
-  $n = mysql_num_rows($res);
+  $res = mysqli_query ($db, $q );
+  $n = mysqli_num_rows($res);
   if ($res && $n>0) {
     echo <<<EOF
 <table width="650" border="1">
@@ -67,10 +68,10 @@ if ($galid && $Planetid<=2) {
 <tr class="a"><th width="80">Coords</th>
    <th class="a" width="80">Members</th><th class="a">Name</th></tr>
 EOF;
-    while ($row=mysql_fetch_row($res)) {
+    while ($row=mysqli_fetch_row($res)) {
       echo "<tr><td align=center>($row[0]:$row[1])</td>".
            "<td align=center>$row[4]</td><td>".
-           "<a href=$PHP_SELF?galid=$row[3]>$row[2]</a></td></tr>\n";
+           "<a href=$_SERVER[PHP_SELF]?galid=$row[3]>$row[2]</a></td></tr>\n";
     }
     echo "</table>\n";
   } else {

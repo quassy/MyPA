@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,9 +30,9 @@ require "msgbox.php";
 function fetch_name ($id) {
   global $db;
 
-  $res = mysql_query ("SELECT name,type,block_id FROM rc_class WHERE id='$id'", $db); 
+  $res = mysqli_query ("SELECT name,type,block_id FROM rc_class WHERE id='$id'", $db); 
   if ($res) 
-    $row = mysql_fetch_row($res);
+    $row = mysqli_fetch_row($res);
 
   return $row;
 }

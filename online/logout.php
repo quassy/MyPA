@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,12 +24,12 @@ require "dblogon.php";
 require "logging.php";
 
 if ( $Planetid>0 ) {
-  $result = mysql_query("UPDATE user SET uptime=".
+  $result = mysqli_query($db, "UPDATE user SET uptime=".
              "SEC_TO_TIME(UNIX_TIMESTAMP(last) - UNIX_TIMESTAMP(login_date) + ".
              "TIME_TO_SEC(uptime)) ".
-             "WHERE planet_id='$Planetid' AND (mode&0xF) = 2",$db);
-  $result = mysql_query("UPDATE planet SET mode=((mode & 0xF0) + 1) ".
-		      "WHERE id='$Planetid' AND (mode&0xF) = 2", $db);
+             "WHERE planet_id='$Planetid' AND (mode&0xF) = 2");
+  $result = mysqli_query($db, "UPDATE planet SET mode=((mode & 0xF0) + 1) ".
+		      "WHERE id='$Planetid' AND (mode&0xF) = 2" );
   do_log_me(2, 1,""); 
   // event:logout=2, class:login/out=1
 }

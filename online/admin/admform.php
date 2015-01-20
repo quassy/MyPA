@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,16 +40,16 @@ function submit_values($id, $values, $table) {
   global $db;
 
   $q = "select * from $table WHERE id = '$id'"; 
-  $result = mysql_query ($q, $db);
+  $result = mysqli_query ($db, $q );
   
-  if (mysql_num_rows($result) > 0) {
+  if (mysqli_num_rows($result) > 0) {
     $q = "UPDATE $table set $values WHERE id='$id'";
   } else {
     $q = "INSERT INTO $table set $values";
   }
  
   echo "$q<br>";
-  $result = mysql_query ($q, $db);
+  $result = mysqli_query ($db, $q );
 
   if (!$result) {
     echo "<font color=\"red\">Update/insert into $table ".

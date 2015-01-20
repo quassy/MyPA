@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-require "popup_header.php";
+require "popup_header.inc";
 
 $extra_header .= "\n<SCRIPT LANGUAGE=\"javascript\">\n".
 "<!--\n".
@@ -44,12 +44,12 @@ require "gal_report.inc";
 $target_x = $myrow["x"];
 $target_y = $myrow["y"];
 
-if ($submit || $plus || $minus) {
-  if ($x && $y) {
+if (ISSET($submit) || ISSET($plus) || ISSET($minus)) {
+  if (ISSET($x) && ISSET($y)) {
     $x = min(max(1,$x),$universe_size);
     $y = min(max(1,$y),$cluster_size);
 
-    if($plus) {
+    if(ISSET($plus)) {
       if ($y == $cluster_size) {
 	$y = 1;
 	if ($x == $universe_size) {
@@ -60,7 +60,7 @@ if ($submit || $plus || $minus) {
       } else {
 	$y = $y + 1;
       }
-    } else if ($minus) {
+    } else if (ISSET($minus)) {
       if ($y == 1) {
 	$y = $cluster_size;
 	if ($x == 1) {
@@ -81,11 +81,11 @@ if ($submit || $plus || $minus) {
 
 titlebox("Galaxy");
 
-$result = mysql_query ("SELECT id,name,pic,gc FROM galaxy ".
-		       "WHERE x='$target_x' AND y='$target_y'", $db);
+$result = mysqli_query ($db, "SELECT id,name,pic,gc FROM galaxy ".
+		       "WHERE x='$target_x' AND y='$target_y'" );
 
-if ($result && mysql_num_rows($result)) {
-  $grow = mysql_fetch_row($result);
+if ($result && mysqli_num_rows($result)) {
+  $grow = mysqli_fetch_row($result);
   $gname = $grow[1] . " ($target_x:$target_y)";
   $gpic = $grow[2]; 
   $gcid = $grow[3];
@@ -95,19 +95,19 @@ if ($result && mysql_num_rows($result)) {
   $gpic = 0;
 }
 
-$result = mysql_query ("SELECT SUM(score) FROM planet ".
+$result = mysqli_query ($db, "SELECT SUM(score) FROM planet ".
 		       "WHERE x='$target_x' AND y='$target_y' ".
-                       "AND mode!=0", $db);
+                       "AND mode!=0" );
 
-if ($result && mysql_num_rows($result)) {
-  $prow = mysql_fetch_row($result);
+if ($result && mysqli_num_rows($result)) {
+  $prow = mysqli_fetch_row($result);
   $gname .= " Score:&nbsp;". pval($prow[0]);
 }
 
 ?>
 
 <center>
-<form method="post" action="<?php echo $PHP_SELF?>">
+<form method="post" action="<?php echo $_SERVER["PHP_SELF"]?>">
 <input type=submit value="&nbsp;<-&nbsp;" name="minus">&nbsp;&nbsp;
 <input type="text" name="x" size="3" value="<?php echo $target_x?>">&nbsp;
 <input type="text" name="y" size="3" value="<?php echo $target_y?>">&nbsp;
@@ -119,8 +119,8 @@ if ($result && mysql_num_rows($result)) {
 <?php
 if ($gpic) {
   echo "<hr width=\"630\">\n";
-  if ($mysettings & 4 && ! $override_settings) {
-    echo "\n<a href=\"$PHP_SELF?submit=1&x=$target_x&y=$target_y&override_settings=1\">".
+  if ($mysettings & 4 && !ISSET($override_settings)) {
+    echo "\n<a href=\"$_SERVER[PHP_SELF]?submit=1&x=$target_x&y=$target_y&override_settings=1\">".
       "View gal picture</a>"; 
   } else {
     echo "\n<img src=\"$gpic\">"; 

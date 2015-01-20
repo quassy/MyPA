@@ -28,7 +28,7 @@
   	/* Paste text */
    	$PasteText = "";
 
-	function CreateShipGroup( $ShipGroup, $ShipType, $BeginAmount)
+	function CreateShipGroup( &$ShipGroup, $ShipType, $BeginAmount)
     {
         $ShipGroup["Type"] = $ShipType;
         $ShipGroup["BeginAmount"] = $BeginAmount;
@@ -49,23 +49,23 @@
 			$CalcLog .= $InputString;
 	}
 
-	function AddTotals ( $Type, $Total, $Amount )
+	function AddTotals ( $Type, &$Total, $Amount )
 	{
-		$Total["Amount"]  += $Amount;
-		$Total["Fuel"]    += $Amount * $Type["Fuel"];
-		$Total["Crystal"] += $Amount * $Type["Crystal"];
-		$Total["Metal"]   += $Amount * $Type["Metal"];
-		$Total["Eonium"]  += $Amount * $Type["Eonium"];
-		$Total["Worth"]   += $Amount * ( $Type["Crystal"] + $Type["Metal"] + $Type["Eonium"] ) / 10;
+		$Total["Amount"]  = (ISSET($Total) && array_key_exists("Amount", $Total)?$Total["Amount"]:0) + $Amount;
+		$Total["Fuel"]    = (ISSET($Total) && array_key_exists("Fuel", $Total )?$Total["Fuel"] :0) + $Amount * $Type["Fuel"];
+		$Total["Crystal"] = (ISSET($Total) && array_key_exists("Crystal", $Total )?$Total["Crystal"] :0) + $Amount * $Type["Crystal"];
+		$Total["Metal"]   = (ISSET($Total) && array_key_exists("Metal", $Total )?$Total["Metal"] :0) + $Amount * $Type["Metal"];
+		$Total["Eonium"]  = (ISSET($Total) && array_key_exists("Eonium", $Total )?$Total["Eonium"] :0) + $Amount * $Type["Eonium"];
+		$Total["Worth"]   = (ISSET($Total) && array_key_exists("Worth", $Total )?$Total["Worth"] :0) + $Amount * ( $Type["Crystal"] + $Type["Metal"] + $Type["Eonium"] ) / 10;
 		if ( $Type["ShipClass"] == "RO" && $Type["Name"] != "Uninitiated roid" )
-			$Total["Worth"] += $Amount * 1500;
+			$Total["Worth"] = (ISSET($Total) && array_key_exists("Worth", $Total )?$Total["Worth"] :0) + $Amount * 1500;
 	}
 
-	function CalcTotals ( $Flt, $t, $Totals )
+	function CalcTotals ( $Flt, $t, &$Totals )
 	{
-		AddTotals( $Flt["Ships"][$t]["Type"], &$Totals["TotalShips"], $Flt["Ships"][$t]["BeginAmount"] );
-		AddTotals( $Flt["Ships"][$t]["Type"], &$Totals["TotalLost"], $Flt["Ships"][$t]["BeginAmount"]- $Flt["Ships"][$t]["Amount"] ); /* Removed " + $Flt[$t]["Gained"]" */
-		AddTotals( $Flt["Ships"][$t]["Type"], &$Totals["TotalStunned"], $Flt["Ships"][$t]["Stunned"] );
+		AddTotals( $Flt["Ships"][$t]["Type"], $Totals["TotalShips"], $Flt["Ships"][$t]["BeginAmount"] );
+		AddTotals( $Flt["Ships"][$t]["Type"], $Totals["TotalLost"], $Flt["Ships"][$t]["BeginAmount"]- $Flt["Ships"][$t]["Amount"] ); /* Removed " + $Flt[$t]["Gained"]" */
+		AddTotals( $Flt["Ships"][$t]["Type"], $Totals["TotalStunned"], $Flt["Ships"][$t]["Stunned"] );
 
 	}
 
@@ -77,24 +77,24 @@
 		{
       		$CalcLogBuffer[0] = "<br><center><span class=title>TICK ". ($t+1) ."</span></center>";
 
-		    ClearHitsStuns( &$Fleet[0]["Ships"] );
-		    ClearHitsStuns( &$Fleet[1]["Ships"] );
+		    ClearHitsStuns( $Fleet[0]["Ships"] );
+		    ClearHitsStuns( $Fleet[1]["Ships"] );
 
 		    for( $InitCount = 0; $InitCount < 16; $InitCount++ )
 	        {
-	            ActInitiative( &$Fleet[0], &$Fleet[1], $InitCount, 0 );
-	            ActInitiative( &$Fleet[1], &$Fleet[0], $InitCount, 1 );
-	            CleanUp( &$Fleet[0] );
-    	        CleanUp( &$Fleet[1] );
+	            ActInitiative( $Fleet[0], $Fleet[1], $InitCount, 0 );
+	            ActInitiative( $Fleet[1], $Fleet[0], $InitCount, 1 );
+	            CleanUp( $Fleet[0] );
+		    CleanUp( $Fleet[1] );
 	        }
 
 			$Fleet[0]["Totals"] = null;
 			$Fleet[1]["Totals"] = null;
 
 			for ( $x = 0; $x < count($Fleet[0]["Ships"]); $x++ )
-       			CalcTotals( $Fleet[0], $x, &$Fleet[0]["Totals"] );
+       			CalcTotals( $Fleet[0], $x, $Fleet[0]["Totals"] );
 			for ( $x = 0; $x < count($Fleet[1]["Ships"]); $x++ )
-       			CalcTotals( $Fleet[1], $x, &$Fleet[1]["Totals"] );
+       			CalcTotals( $Fleet[1], $x, $Fleet[1]["Totals"] );
 
 			if ( $Fleet[0]["PlanetScore"] != 0 )
 				$Fleet[0]["PlanetScore"] -= round($Fleet[0]["Totals"]["TotalLost"]["Worth"]);
@@ -114,12 +114,12 @@
 
     }
 
-    function ActInitiative ( $AttFlt, $DefFlt, $InitCount, $who )
+    function ActInitiative ( &$AttFlt, &$DefFlt, $InitCount, $who )
     {
     	global $CalcLogBuffer;
 
-    	$Att = &$AttFlt[Ships];
-    	$Def = &$DefFlt[Ships];
+    	$Att = &$AttFlt["Ships"];
+    	$Def = &$DefFlt["Ships"];
 
         for( $t = 0; $t < count($Att); $t++ )
         {
@@ -129,8 +129,8 @@
 
            		$CalcLogBuffer[1] = "<br><b>Acting out initiative $InitCount :</b><br>";
 
-           		CalcLog ( "<br>Acting out initiative $InitCount : ($Att[Side]) ". $Att[$t]["Type"]["Name"] ." <br>");
-           		CalcLog ( "Total Guns : $Guns<br>");
+           		CalcLog ( "<br>Acting out initiative $InitCount : (".(array_key_exists("Side",$Att)?$Att["Side"]:0).") ". $Att[$t]["Type"]["Name"] ." <br>");
+           		CalcLog ( "Total Guns : ".(ISSET($Guns)?$Guns:0)."<br>");
 
 	           	$CalcLogBuffer[3] = "";
 	           	$Done = false;
@@ -144,7 +144,7 @@
 		           	else
 		           		$CalcLogBuffer[2] = "<b>Primary targets:</b><br>";
 
-	           		list( $GunsLeft, $Done) = AttackTargets( &$AttFlt, &$Att[$t] , &$DefFlt, &$Def, $Att[$t]["Type"]["Target1"], $GunsLeft );
+	           		list( $GunsLeft, $Done) = AttackTargets( $AttFlt, $Att[$t] , $DefFlt, $Def, $Att[$t]["Type"]["Target1"], $GunsLeft );
 	           		CalcLog ( "<br>Guns left after target1 : $GunsLeft<br>");
 		           	$CalcLogBuffer[3] = "Restshots!";
 	           	}
@@ -159,7 +159,7 @@
 		           		$CalcLogBuffer[2] = "<b>Secondary targets (rest shots):</b><br>";
 		           	else
 	           			$CalcLogBuffer[2] = "<b>Secondary targets:</b><br>";
-	           		list( $GunsLeft, $Done) = AttackTargets( &$AttFlt, &$Att[$t] , &$DefFlt, &$Def, $Att[$t]["Type"]["Target2"], $GunsLeft );
+	           		list( $GunsLeft, $Done) = AttackTargets( $AttFlt, $Att[$t] , $DefFlt, $Def, $Att[$t]["Type"]["Target2"], $GunsLeft );
 	           		CalcLog ( "<br>Guns left after target2 : $GunsLeft<br>");
 		           	$CalcLogBuffer[3] = "Restshots!";
 	           	}
@@ -175,7 +175,7 @@
 		           	else
 	           			$CalcLogBuffer[2] = "<b>Tertiary targets:</b><br>";
 
-	           		list( $GunsLeft, $Done) = AttackTargets( &$AttFlt, &$Att[$t] , &$DefFlt, &$Def, $Att[$t]["Type"]["Target3"], $GunsLeft );
+	           		list( $GunsLeft, $Done) = AttackTargets( $AttFlt, $Att[$t] , $DefFlt, $Def, $Att[$t]["Type"]["Target3"], $GunsLeft );
 	           		CalcLog ( "<br>Guns left after target3 : $GunsLeft<br>");
 		           	$CalcLogBuffer[3] = "Restshots!";
 	           	}
@@ -187,8 +187,8 @@
 
 	            if ( $InitCount == 0 )
 	            {
-		            CleanUp( &$AttFlt );
-		            CleanUp( &$DefFlt );
+		            CleanUp( $AttFlt );
+		            CleanUp( $DefFlt );
 		        }
             }
         }
@@ -218,7 +218,7 @@
 	    return false;
 	}
 
-    function AttackTargets( $AttFlt, $Att, $DefFlt, $Def, $Target, $inGuns )
+    function AttackTargets( &$AttFlt, &$Att, &$DefFlt, &$Def, $Target, $inGuns )
     {
 		global $CalcType, $Warning, $CalcLogBuffer, $RoidChance, $RoidChanceHistory, $CapRule;
 
@@ -330,8 +330,11 @@
 					$CalcLogBuffer[1] = null;
 					$CalcLogBuffer[2] = null;
 				}
-	    		$ShotsFiredNow = ResolveAvgShots( $FiringOnThese, &$Att, &$Def[$t], &$Def, $RoidChance);
-	    		$ShotsUsed += $ShotsFiredNow;
+	    		$ShotsFiredNow = ResolveAvgShots( $FiringOnThese, $Att, $Def[$t], $Def, $RoidChance);
+	    		if (ISSET($ShotsUsed)) 
+			  $ShotsUsed += $ShotsFiredNow;
+			else
+			  $ShotsUsed = $ShotsFiredNow;
 
 	    		if ( $ShotsFiredNow < $FiringOnThese )
 	    			CalcLog( ", ".( $FiringOnThese - $ShotsFiredNow )." guns unused.<br>", 2 );
@@ -360,7 +363,7 @@
 	    return array($inGuns-$ShotsUsed, false);
     }
 
-	function ResolveAvgShots( $FiringOnThese, $AttShips, $DefShips, $Def, $RoidChance )
+	function ResolveAvgShots( $FiringOnThese, &$AttShips, &$DefShips, &$Def, $RoidChance )
 	{
 		global $CalcLogBuffer;
 
@@ -542,7 +545,7 @@
 //            $DefShips["BeingStolen"] = true;
     }
 
-    function CleanUp( $DefFlt )
+    function CleanUp( &$DefFlt )
     {
     	$Def = &$DefFlt["Ships"];
     	$DefFlt["Totals"] = null;
@@ -578,11 +581,11 @@
 	        $Def[$t]["ToBeStunned"] = 0;
 	        $Def[$t]["TargetNr"] = 0;
 
-	        CalcTotals( &$DefFlt, $t, &$DefFlt["Totals"] );
+	        CalcTotals( $DefFlt, $t, $DefFlt["Totals"] );
         }
     }
 
-    function ClearHitsStuns ( $Flt )
+    function ClearHitsStuns ( &$Flt )
     {
 		for ( $t = 0; $t < count($Flt); $t++ )
         {
@@ -607,10 +610,13 @@
 
         for( $t = 0; $t < count($Def); $t++ )
         {
-            if ( IsTarget( $Att[$AttNr]["Type"], $Def[$t]["Type"], $Att[$AttNr]["Type"][$Target] ) )
+	  if ( array_key_exists ($AttNr, $Att) 
+	       && IsTarget( $Att[$AttNr]["Type"], 
+			    $Def[$t]["Type"], 
+			    $Att[$AttNr]["Type"][$Target] ) )
             {
-				if ( $Tel++ > 0 ) $ArrayStr .= ",";
-				$ArrayStr .= $t;
+	      if ( $Tel++ > 0 ) $ArrayStr .= ",";
+	      $ArrayStr .= $t;
             }
         }
 
@@ -623,7 +629,7 @@
 	}
 
 
-    function WriteJSInfo( $Att, $Def, $Side )
+    function WriteJSInfo( &$Att, &$Def, $Side )
     {
 
 		echo "   ShipTargets[$Side] = new Array;\n";
@@ -695,7 +701,7 @@
 <td class=lostcel><?= $lost ?></td>
 <td class=stunnedcel><?= $stunned ?></td>
 <?
-		if ( $Att[$t] )
+		if ( array_key_exists($t, $Att) && $Att[$t] )
 		{
 			$amount = $Att[$t]["BeginAmount"]- $Att[$t]["Amount"];
 			$report = $ShipBattleRep["att"][$Att[$t]["Type"]["Name"]]["lost"];
@@ -792,7 +798,7 @@
 		endif;
 	?>
 <tr>
-<input type=hidden name=CapRule value=<?= $CapRule ?>>
+<input type=hidden name=CapRule value=<?= (ISSET($CapRule)?$CapRule:"") ?>>
 <td class=namecel>Planet score</td>
 <td class=inputcel colspan=3 align=left>
 <input tabindex=1000 type='text' size=15 name='dplanetscore' value='<?=$DefFlt["PlanetScore"]?>'> points
@@ -822,8 +828,14 @@
 				{
 					$MaxGrab += floor($RoidChance*$BeginAmount);
 					$BeginAmount -= floor($RoidChance*$BeginAmount);
-					$GrabMax[$i] += floor($RoidChance*$BeginAmount);
-					$GrabActual[$i] += $Def[$tt]["BeginAmount"] - $Def[$tt]["Amount"];
+					if (ISSET($GrabMax) && array_key_exists($i, $GrabMax))
+					  $GrabMax[$i] += floor($RoidChance*$BeginAmount);
+					else
+					  $GrabMax[$i] = floor($RoidChance*$BeginAmount);
+					if (ISSET($GrabActual) && array_key_exists($i, $GrabActual))
+					  $GrabActual[$i] += $Def[$tt]["BeginAmount"] - $Def[$tt]["Amount"];
+					else
+					  $GrabActual[$i] = $Def[$tt]["BeginAmount"] - $Def[$tt]["Amount"];
 				}
 
 				$text[] = "<span class=losttext>". $RoidGrab ."</span> ". $Def[$tt]["Type"]["Name"] ."s, <span class=losttext>". $MaxGrab ."</span> max";
@@ -897,68 +909,68 @@
 		$Fleet[1]["Totals"] = null;
 
 		/* Edit input value for netscape */
-		$Array[input] = preg_replace( "/^\x20+(.*)$/m", "\\1", $Array[input]);
-		$Array[input] = preg_replace( "/\n\r/", "\n \r", $Array[input]);
-		/* Edit input value for opera & netscape finish */
-		$Array[input] = preg_replace( "/\r\n/", " ", $Array[input]);
+		$Array["input"] = preg_replace( "/^\x20+(.*)$/m", "\\1", $Array["input"]);
+		$Array["input"] = preg_replace( "/\n\r/", "\n \r", $Array["input"]);
+		/* Edit  input value for opera & netscape finish */
+		$Array["input"] = preg_replace( "/\r\n/", " ", $Array["input"]);
 
-		$PasteText = $Array[input];
+		$PasteText = $Array["input"];
 
         /* process unit scan/overview/military pastes */
-		if ( $Array[input] && $Array[Addtype] != "BattleReport" )
+		if ( $Array["input"] && $Array["Addtype"] != "BattleReport" )
 		{
-		// $Array[input] = preg_replace( "/\r/", " ", $Array[input]);
-		// $Array[input] = preg_replace( "/\n/", " ", $Array[input]);
-			if ( $Array[fleetbase] || $Array[fleet1] || $Array[fleet2] || $Array[fleet3] )
-				preg_match_all( "/(\w*\s?[\w]+)\s([0-9]+|\s)\s([0-9]+|\s)\s([0-9]+|\s)\s([0-9]+|\s)([^0-9a-zA-Z]|$)/iU", $Array[input], $output, PREG_SET_ORDER  );
+		// $Array["input"] = preg_replace( "/\r/", " ", $Array["input"]);
+		// $Array["input"] = preg_replace( "/\n/", " ", $Array["input"]);
+			if ( $Array["fleetbase"] || $Array["fleet1"] || $Array["fleet2"] || $Array["fleet3"] )
+				preg_match_all( "/(\w*\s?[\w]+)\s([0-9]+|\s)\s([0-9]+|\s)\s([0-9]+|\s)\s([0-9]+|\s)([^0-9a-zA-Z]|$)/iU", $Array["input"], $output, PREG_SET_ORDER  );
 			else
-				preg_match_all( "/(\w*\s?[\w]+)\s([0-9]+)([^0-9]|$)/isU", $Array[input], $output, PREG_SET_ORDER  );
+				preg_match_all( "/(\w*\s?[\w]+)\s([0-9]+)([^0-9]|$)/isU", $Array["input"], $output, PREG_SET_ORDER  );
 
 			foreach ( (array)$output as $row )
 			{
-				if ( $Array[fleetbase] || $Array[fleet1] || $Array[fleet2] || $Array[fleet3] )
+				if ( $Array["fleetbase"] || $Array["fleet1"] || $Array["fleet2"] || $Array["fleet3"] )
 				{
-					if ( $Array[fleetbase] )
+					if ( $Array["fleetbase"] )
 						$row[2] = (int)$row[2];
 					else
 						$row[2] = 0;
-					if ( $Array[fleet1] )
+					if ( $Array["fleet1"] )
 						$row[2] += (int)$row[3];
-					if ( $Array[fleet2] )
+					if ( $Array["fleet2"] )
 						$row[2] += (int)$row[4];
-					if ( $Array[fleet3] )
+					if ( $Array["fleet3"] )
 						$row[2] += (int)$row[5];
 				}
 
 
 				switch ( trim($row[1]) )
 				{
-					case "Metal" : $ShipAddArray[$Array[Addtype]]["Metal roid"] = $row[2]; break;
-					case "Metal Asteroids" : $ShipAddArray[$Array[Addtype]]["Metal roid"] = $row[2]; break;
-					case "Crystal" : $ShipAddArray[$Array[Addtype]]["Crystal roid"] = $row[2]; break;
-					case "Crystal Asteroids" : $ShipAddArray[$Array[Addtype]]["Crystal roid"] = $row[2]; break;
-					case "Eonium" : $ShipAddArray[$Array[Addtype]]["Eonium roid"] = $row[2]; break;
-					case "Eonium Asteroids" : $ShipAddArray[$Array[Addtype]]["Eonium roid"] = $row[2]; break;
+					case "Metal" : $ShipAddArray[$Array["Addtype"]]["Metal roid"] = $row[2]; break;
+					case "Metal Asteroids" : $ShipAddArray[$Array["Addtype"]]["Metal roid"] = $row[2]; break;
+					case "Crystal" : $ShipAddArray[$Array["Addtype"]]["Crystal roid"] = $row[2]; break;
+					case "Crystal Asteroids" : $ShipAddArray[$Array["Addtype"]]["Crystal roid"] = $row[2]; break;
+					case "Eonium" : $ShipAddArray[$Array["Addtype"]]["Eonium roid"] = $row[2]; break;
+					case "Eonium Asteroids" : $ShipAddArray[$Array["Addtype"]]["Eonium roid"] = $row[2]; break;
 					case "Resource" :
 					case "Unknown" :
 					case "Uninitiated" :
-					case "Unknown Asteroids" : $ShipAddArray[$Array[Addtype]]["Uninitiated roid"] = $row[2]; break;
+					case "Unknown Asteroids" : $ShipAddArray[$Array["Addtype"]]["Uninitiated roid"] = $row[2]; break;
 					case "Roid Score" :
-					case "Score" : $Array[$Array[Addtype][0]."planetscore"] = $row[2]; break;
-					default : $ShipAddArray[$Array[Addtype]][trim("$row[1]")] = $row[2];
+					case "Score" : $Array[$Array["Addtype"][0]."planetscore"] = $row[2]; break;
+					default : $ShipAddArray[$Array["Addtype"]][trim("$row[1]")] = $row[2];
 				}
 			}
 		}
 
 
 		/* process battle report */
-		if ( $Array[input] && $Array[Addtype] == "BattleReport")
+		if ( $Array["input"] && $Array["Addtype"] == "BattleReport")
 		{
-		// $Array[input] = preg_replace( "/\n\r/", "\n \r", $Array[input]);
-		// $Array[input] = preg_replace( "/\r\n/", " ", $Array[input]);
+		// $Array["input"] = preg_replace( "/\n\r/", "\n \r", $Array["input"]);
+		// $Array["input"] = preg_replace( "/\r\n/", " ", $Array["input"]);
 			global $NumCalcs;
 
-			preg_match_all( "|(\w*\s?[\w]+)\s*((\s[0-9]+)+)|", $Array[input], $output, PREG_SET_ORDER  );
+			preg_match_all( "|(\w*\s?[\w]+)\s*((\s[0-9]+)+)|", $Array["input"], $output, PREG_SET_ORDER  );
 
 			if ( $NumCalcs != 1 )
 			{
@@ -975,7 +987,7 @@
 					case "Eonium" : $ShipType = "Eonium roid"; break;
 					case "Unknown" :
 					case "Resource" : $ShipType = "Uninitiated roid"; break;
-					case "Score" : $Array[planetscore] = $row[2];break;
+					case "Score" : $Array["planetscore"] = $row[2];break;
 					default : $ShipType = trim($row[1]);
 				}
 
@@ -1005,10 +1017,10 @@
 					}
 				}
 			}
-	    	$Fleet[0]["PlanetScore"] = $Array[aplanetscore];
-	    	$Fleet[0]["PlanetScoreRatio"] = $Array[aplanetscoreratio];
-	    	$Fleet[1]["PlanetScore"] = $Array[dplanetscore];
-	    	$Fleet[1]["PlanetScoreRatio"] = $Array[dplanetscoreratio];
+	    	$Fleet[0]["PlanetScore"] = $Array["aplanetscore"];
+	    	$Fleet[0]["PlanetScoreRatio"] = $Array["aplanetscoreratio"];
+	    	$Fleet[1]["PlanetScore"] = $Array["dplanetscore"];
+	    	$Fleet[1]["PlanetScoreRatio"] = $Array["dplanetscoreratio"];
 		}
 
 
@@ -1021,34 +1033,38 @@
 		    	if ( $key[0] == "t" )
 		    	{
 		    		/* clear values if inserting battlereport */
-		    		if ( $Array[Addtype] == "BattleReport" )
+		    		if ( $Array["Addtype"] == "BattleReport" )
 		    			$value = 0;
 
 			    	if ( $key[1] == "a" )
 			    	{
 
 
-		    			if ( $Array[Addtype] )
+				  if ( $Array["Addtype"] ) {
+					  if (ISSET($ShipAddArray))
 		    				$value += $ShipAddArray["att"][$ShipTypes[$tel_att]["Name"]];
-		    			CreateShipGroup( &$Fleet[0]["Ships"][$tel_att], $ShipTypes[$tel_att], $value);
-		        		CalcTotals( $Fleet[0], $tel_att, &$Fleet[0]["Totals"] );
+				  }
+		    			CreateShipGroup( $Fleet[0]["Ships"][$tel_att], $ShipTypes[$tel_att], $value);
+		        		CalcTotals( $Fleet[0], $tel_att, $Fleet[0]["Totals"] );
 		    			$tel_att++;
 		    		}
 		    		elseif ( $key[1] == "d" )
 		    		{
-		    			if ( $Array[Addtype] )
+		    			if ( $Array["Addtype"] ){
+					  if (ISSET($ShipAddArray))
 		    				$value += $ShipAddArray["def"][$ShipTypes[$tel_def]["Name"]];
-		    			CreateShipGroup( &$Fleet[1]["Ships"][$tel_def], $ShipTypes[$tel_def], $value);
-		        		CalcTotals( $Fleet[1], $tel_def, &$Fleet[1]["Totals"] );
+					}
+		    			CreateShipGroup( $Fleet[1]["Ships"][$tel_def], $ShipTypes[$tel_def], $value);
+		        		CalcTotals( $Fleet[1], $tel_def, $Fleet[1]["Totals"] );
 		    			$tel_def++;
 
 		    		}
 		    	}
 		    }
-	    	$Fleet[0]["PlanetScore"] = $Array[aplanetscore];
-	    	$Fleet[0]["PlanetScoreRatio"] = $Array[aplanetscoreratio];
-	    	$Fleet[1]["PlanetScore"] = $Array[dplanetscore];
-	    	$Fleet[1]["PlanetScoreRatio"] = $Array[dplanetscoreratio];
+		    $Fleet[0]["PlanetScore"]      = (array_key_exists("aplanetscore",$Array)?$Array["aplanetscore"]:0);
+		    $Fleet[0]["PlanetScoreRatio"] = (array_key_exists("aplanetscoreratio", $Array)?$Array["aplanetscoreratio"]:0);
+		    $Fleet[1]["PlanetScore"]      = (array_key_exists("dplanetscore", $Array)?$Array["dplanetscore"]:0);
+		    $Fleet[1]["PlanetScoreRatio"] = (array_key_exists("dplanetscoreratio", $Array)?$Array["dplanetscoreratio"]:0);
 	    }
 
 	    if ( $Command == "New" )
@@ -1058,9 +1074,9 @@
 		    	for( $t = 0; $t < count($ShipTypes); $t++ )
 		    	{
 		    		if ( $ShipTypes[$t]["Init"] <= 2 && $y == 0 && $ShipTypes[$t]["Special"] != "Anti PDS" ) continue;
-		    		CreateShipGroup( &$Fleet[$y]["Ships"][$t], $ShipTypes[$t], 0 );
+		    		CreateShipGroup( $Fleet[$y]["Ships"][$t], $ShipTypes[$t], 0 );
 
-	        		CalcTotals( $Fleet[$y], $t, &$Fleet[$y]["Totals"] );
+	        		CalcTotals( $Fleet[$y], $t, $Fleet[$y]["Totals"] );
 		    	}
 		    }
 	    	$Fleet[0]["PlanetScore"] = 0;

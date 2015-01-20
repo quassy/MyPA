@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,17 +41,17 @@ function print_mail ($r) {
 }
 
 
-if ($submit && $pleader && $pleader !="") {
+if (ISSET($submit) && ISSET($pleader) && $pleader !="") {
   $q = "SELECT id FROM planet  WHERE leader LIKE '$pleader'";
-  $result = mysql_query ($q, $db);
+  $result = mysqli_query ($db, $q );
 
-  if ($result && mysql_num_rows($result) > 0) {
-    $row = mysql_fetch_row($result);
+  if ($result && mysqli_num_rows($result) > 0) {
+    $row = mysqli_fetch_row($result);
     $id = $row[0];
   } else {
     $id = $Planetid;
   }
-} if ($submit && $playerid && $playerid !="") {
+} if (ISSET($submit) && ISSET($playerid) && $playerid !="") {
   $id = $playerid;
 } else {
    $id = $Planetid;
@@ -62,7 +62,7 @@ if ($submit && $pleader && $pleader !="") {
 
 <table  width="640" border="1" cellpadding="2" >
 <tr>
-<form method="post" action="<?php echo $PHP_SELF?>">
+<form method="post" action="<?php echo $_SERVER["PHP_SELF"]?>">
   <td align="center" class="a">Enter target leader:</td>
   <td><input type="text" name="pleader" size="25"></td>
   <td colspan="2"><input type=submit value="  Search  " name=submit></td>
@@ -73,9 +73,9 @@ if ($submit && $pleader && $pleader !="") {
 <br>
 <?php
 
-$result = mysql_query ("SELECT leader FROM planet WHERE id='$id'", $db);
-if ($result && mysql_num_rows($result) > 0) {
-  $row=mysql_fetch_array($result);
+$result = mysqli_query ($db, "SELECT leader FROM planet WHERE id='$id'" );
+if ($result && mysqli_num_rows($result) > 0) {
+  $row=mysqli_fetch_array($result);
   $pleader = $row[0];
 } else {
   $pleader = "MySQL error";
@@ -99,10 +99,10 @@ $q = "SELECT mail.id AS id, mail.date AS date, mail.subject AS subject, ".
      "AND ps.id=mail.sender_id AND pr.id=mail.planet_id ".
      "ORDER BY mail.date DESC";
 
-$result = mysql_query ($q, $db);
+$result = mysqli_query ($db, $q );
 
-if ($result && mysql_num_rows($result) > 0) {
-  while ($row=mysql_fetch_array($result)) {
+if ($result && mysqli_num_rows($result) > 0) {
+  while ($row=mysqli_fetch_array($result)) {
     print_mail ($row);
   }
 }

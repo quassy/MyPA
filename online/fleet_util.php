@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,8 +26,8 @@ function get_eta ($fleet_num) {
      "WHERE fleet.planet_id='$Planetid' AND units.id=fleet.fleet_id ".
      "AND fleet.num='$fleet_num' AND uc.id=units.unit_id";
 
-  $result = mysql_query($q, $db);
-  $row = mysql_fetch_row($result);
+  $result = mysqli_query($db, $q );
+  $row = mysqli_fetch_row($result);
   $eta = $row[0];
 
   // ticker sets modifier
@@ -61,9 +61,9 @@ function get_fuel ($fleet_num) {
   
   $fuel = 0;
 
-  $result = mysql_query($q, $db);
-  if ($result && mysql_num_rows($result) == 1) {
-    $row = mysql_fetch_row($result);
+  $result = mysqli_query($db, $q );
+  if ($result && mysqli_num_rows($result) == 1) {
+    $row = mysqli_fetch_row($result);
     if ($row && $row[0])
        $fuel = $row[0];
   }
@@ -94,9 +94,9 @@ function fetch_fleet_sum ($fleet_id)
   $q = "SELECT SUM(units.num) FROM units, unit_class AS uc ".
      "WHERE  units.unit_id=uc.id AND uc.class!=3 AND units.id='$fleet_id'";
 
-  $result = mysql_query( $q, $db);
+  $result = mysqli_query($db,  $q );
   if ($result) {
-    $mynum = mysql_fetch_row ($result);
+    $mynum = mysqli_fetch_row ($result);
     return $mynum[0];
   } else {
     return 0;

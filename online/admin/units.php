@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,32 +22,32 @@
 require_once "admhead.php";
 require_once "admform.php";
 
-if ($units && $id) {
+if (ISSET($units) && ISSET($id)) {
 
   $table = "unit_class";
 
   $values ="id='$id'";
-  if ($name) $values .= ", name='$name'";
-  if ($type) $values .= ", type='$type'";
-  if ($t1) $values .= ", t1='$t1'";
-  if ($t2) $values .= ", t2='$t2'";
-  if ($t3) $values .= ", t3='$t3'";
-  if ($init) $values .= ", init='$init'";
-  if ($agility) $values .= ", agility='$agility'";
-  if ($wsp) $values .= ", weapon_speed='$wsp'";
-  if ($guns) $values .= ", guns='$guns'";
-  if ($power) $values .= ", power='$power'";
-  if ($armor) $values .= ", armor='$armor'";
-  if ($resistance) $values .= ", resistance='$resistance'";
-  if ($metal) $values .= ", metal='$metal'";
-  if ($crystal) $values .= ", crystal='$crystal'";
-  if ($eonium) $values .= ", eonium='$eonium'";
-  if ($ticks) $values .= ", build_ticks='$ticks'";
-  if ($fuel) $values .= ", fuel='$fuel'";
-  if ($speed) $values .= ", speed='$speed'";
-  if ($class) $values .= ", class='$class'";
-  if ($rc_id) $values .= ", rc_id='$rc_id'";
-  if ($description) $values .= ", description='$description'";
+  if (ISSET($name)) $values .= ", name='$name'";
+  if (ISSET($type)) $values .= ", type='$type'";
+  if (ISSET($t1)) $values .= ", t1='$t1'";
+  if (ISSET($t2)) $values .= ", t2='$t2'";
+  if (ISSET($t3)) $values .= ", t3='$t3'";
+  if (ISSET($init)) $values .= ", init='$init'";
+  if (ISSET($agility)) $values .= ", agility='$agility'";
+  if (ISSET($wsp)) $values .= ", weapon_speed='$wsp'";
+  if (ISSET($guns)) $values .= ", guns='$guns'";
+  if (ISSET($power)) $values .= ", power='$power'";
+  if (ISSET($armor)) $values .= ", armor='$armor'";
+  if (ISSET($resistance)) $values .= ", resistance='$resistance'";
+  if (ISSET($metal)) $values .= ", metal='$metal'";
+  if (ISSET($crystal)) $values .= ", crystal='$crystal'";
+  if (ISSET($eonium)) $values .= ", eonium='$eonium'";
+  if (ISSET($ticks)) $values .= ", build_ticks='$ticks'";
+  if (ISSET($fuel)) $values .= ", fuel='$fuel'";
+  if (ISSET($speed)) $values .= ", speed='$speed'";
+  if (ISSET($class)) $values .= ", class='$class'";
+  if (ISSET($rc_id)) $values .= ", rc_id='$rc_id'";
+  if (ISSET($description)) $values .= ", description='$description'";
 
   submit_values ($id, $values, $table);
 }
@@ -86,16 +86,16 @@ if ($units && $id) {
     <th width="200">Description</th>
 </tr>
 <?php
-$result = mysql_query("SELECT id,name,type,t1,t2,t3,init,agility,weapon_speed,guns,power,".
+$result = mysqli_query($db, "SELECT id,name,type,t1,t2,t3,init,agility,weapon_speed,guns,power,".
 		      "armor,resistance,metal,crystal,eonium,build_ticks,fuel,speed,class,".
-		      "rc_id,description FROM unit_class ORDER BY id",$db);
-if ($result && mysql_num_rows($result) > 0) {
-  while ($myres = mysql_fetch_row($result)) {
+		      "rc_id,description FROM unit_class ORDER BY id");
+if ($result && mysqli_num_rows($result) > 0) {
+  while ($myres = mysqli_fetch_row($result)) {
     print_admin_row ($myres, 22);
   }
 }
 ?>
-<form method="post" action="<?php echo $PHP_SELF?>">
+<form method="post" action="<?php echo $_SERVER["PHP_SELF"]?>">
 <tr>
 <?php
 admin_form_field ("text","id",3,3);

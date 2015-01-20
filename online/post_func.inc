@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,24 +28,24 @@ function check_post () {
 //    return;
 
   $q = "SELECT last_post,error FROM user WHERE planet_id='$Planetid' AND last_post > now() - 2";
-  $res = mysql_query($q, $db);
-  if (mysql_num_rows($res)>0) {
+  $res = mysqli_query($db, $q );
+  if (mysqli_num_rows($res)>0) {
 
-    $row = mysql_fetch_row($res);
-    mysql_query("UPDATE user SET error=error+1 WHERE planet_id='$Planetid'");
+    $row = mysqli_fetch_row($res);
+    mysqli_query($db, "UPDATE user SET error=error+1 WHERE planet_id='$Planetid'");
 
     if ($row[1]>1) {
 //    echo "<b>SPAM PROTECTION ACTIVATED</b>";
 //    echo "</body></html>\n";
-//    mysql_query("UPDATE planet set mode=1 WHERE id='$Planetid'");
+//    mysqli_query($db, "UPDATE planet set mode=1 WHERE id='$Planetid'");
       do_log_me(2, 10, "Repeated posting autologout ($row[1])");
       // for auto-ban ?!
       // die;
     }
 
-    mysql_query("UPDATE user set last_post=now() WHERE planet_id='$Planetid'",$db);
+    mysqli_query($db, "UPDATE user set last_post=now() WHERE planet_id='$Planetid'");
   } else {
-    mysql_query("UPDATE user set last_post=now(),error=0 WHERE planet_id='$Planetid'",$db);
+    mysqli_query($db, "UPDATE user set last_post=now(),error=0 WHERE planet_id='$Planetid'");
   }
 }
 

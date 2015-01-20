@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,21 +19,26 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-require "popup_header.php";
+require "popup_header.inc";
 require "standard.php";
-require "planet_util.php";
+require "planet_util.inc";
 
 function make_popup_link ($title, $link, $arg) {
-  global $myrow, $PHP_SELF;
-  if ($myrow["no_popup"] == 1) {
-    return "$PHP_SELF?$arg";
+  global $myrow;
+
+  // not used or not usefull
+  /* 
+ if ($myrow["no_popup"] == 1) {
+    return "$_SERVER[PHP_SELF]?$arg";
   } else {
     return "javascript:popupWindow('$title','$link?$arg',340,700)";
   }
+  */
+  return "javascript:popupWindow('$title','$link?$arg',340,700)";
 }
 
 function print_mail ($r) {
-  global $PHP_SELF, $Planetid, $folder;
+  global $Planetid, $folder;
 
   $id = $r["id"];
   $txt = ereg_replace ("<", "&lt;", $r["text"]);
@@ -41,7 +46,7 @@ function print_mail ($r) {
 
   if ($r["sender"] == $Planetid) {
     $ir = get_coord_name($r["receiver"]);
-    $info = "To:  $ir[leader] of $r[planetname] ($ir[x]:$ir[y]:$ir[z])";
+    $info = "To:  $ir[leader] of $ir[planetname] ($ir[x]:$ir[y]:$ir[z])";
   } else {
     $ir = get_coord_name($r["sender"]);
     $info = "From:  $ir[leader] of $ir[planetname] ($ir[x]:$ir[y]:$ir[z])";
@@ -64,16 +69,16 @@ function print_mail ($r) {
   echo "<a href=\"".
     make_popup_link('Forward_Message','nsend_message.php',"forward=".$id).
     "\">Forward</a>&nbsp;|&nbsp;".
-    "<a href=\"$PHP_SELF?folder=$folder&delete=$id\">Delete</a>";
+    "<a href=\"$_SERVER[PHP_SELF]?folder=$folder&delete=$id\">Delete</a>";
 
   if ($folder != 3)
-    echo "&nbsp;|&nbsp;<a href=\"$PHP_SELF?folder=$folder&save=$id\">Save</a>";
+    echo "&nbsp;|&nbsp;<a href=\"$_SERVER[PHP_SELF]?folder=$folder&save=$id\">Save</a>";
   
   echo "</td></tr></table>";
 }
 
 function print_td ($text, $cp, $link="", $jscript=0) {
-  global $browser_type, $PHP_SELF, $imgpath;
+  global $browser_type, $imgpath;
 
   $width = (100. / 6. ) * $cp;
 
@@ -113,7 +118,7 @@ function print_td ($text, $cp, $link="", $jscript=0) {
 }
 
 function msg_menu ($folder) {
-  global $PHP_SELF, $Planetid, $db;
+  global $Planetid, $db;
 
   echo <<<EOF
 <center>
@@ -131,10 +136,10 @@ EOF;
 
   $q = "SELECT folder, count(*) FROM msg ".
        "WHERE planet_id='$Planetid' AND folder!=0 GROUP BY folder";
-  $result = mysql_query ($q, $db);
+  $result = mysqli_query ($db, $q );
 
-  if ($result && mysql_num_rows($result) > 0) {
-    while(($row=mysql_fetch_array($result))) {
+  if ($result && mysqli_num_rows($result) > 0) {
+    while(($row=mysqli_fetch_array($result))) {
       $num[$row[0]] = $row[1];
     }
   }
@@ -148,24 +153,24 @@ EOF;
     if ($i==$folder) {
       print_td("<b>$name</b>&nbsp;:&nbsp;$num[$i]", 2);
     } else {
-      print_td("$name&nbsp;:&nbsp;$num[$i]", 2, "$PHP_SELF?folder=$i");
+      print_td("$name&nbsp;:&nbsp;$num[$i]", 2, "$_SERVER[PHP_SELF]?folder=$i");
     }
   }
 
   echo "</tr>\n<tr>";
   print_td("Delete all messages in current folder",3, 
-           "$PHP_SELF?folder=$folder&delete_all=1");
+           "$_SERVER[PHP_SELF]?folder=$folder&delete_all=1");
 
   if ($folder != 3) {
     print_td ("Save all messages in current folder", 3, 
-              "$PHP_SELF?folder=$folder&save_all=1");
+              "$_SERVER[PHP_SELF]?folder=$folder&save_all=1");
   } else {
     print_td ("Save all messages in current folder", 3);
 
     if ($folder == 1) {
       $q = "UPDATE msg SET old=1 WHERE planet_id='$Planetid' ".
            "AND folder=1";
-      mysql_query ($q, $db);
+      mysqli_query ($db, $q );
     }
   }
   echo "</tr></table>\n";
@@ -199,52 +204,52 @@ if (eregi("opera", $browser)) {
 /* clear has_mail flag if present */
 if ($myrow["has_mail"] == 1) {
   $myrow["has_mail"] = 0;
-  mysql_query ("UPDATE planet SET has_mail=0 WHERE id='$Planetid'", $db);
+  mysqli_query ($db, "UPDATE planet SET has_mail=0 WHERE id='$Planetid'" );
 }
 
 /* top table is written now */
 top_header($myrow);
 
-if (!$folder) $folder=1;
+if (!ISSET($folder)) $folder=1;
 
-if ($delete) {
+if (ISSET($delete)) {
   // if mail is sent to myself it doesnt work :-(
   $q = "UPDATE msg SET folder=0 WHERE mail_id='$delete' AND planet_id='$Planetid' ".
        "AND folder='$folder'";
 
-  $res = mysql_query($q, $db);
-  if (mysql_affected_rows()) {
-    $res = mysql_query("UPDATE mail SET ref=ref-1 ".
-		       "WHERE id='$delete'", $db);
+  $res = mysqli_query($db, $q );
+  if (mysqli_affected_rows($db)) {
+    $res = mysqli_query($db, "UPDATE mail SET ref=ref-1 ".
+		       "WHERE id='$delete'" );
   }
 }
 
-if ($delete_all) {
+if (ISSET($delete_all)) {
   $q = "SELECT mail_id FROM msg ".
      "WHERE planet_id='$Planetid' AND folder='$folder'";
-  $res = mysql_query($q, $db);
+  $res = mysqli_query($db, $q );
 
-  if ($res && mysql_num_rows($res) > 0) {
-    while($row=mysql_fetch_row($res)) {
-      mysql_query("UPDATE mail SET ref=ref-1 ".
-		  "WHERE id='$row[0]'", $db);
+  if ($res && mysqli_num_rows($res) > 0) {
+    while($row=mysqli_fetch_row($res)) {
+      mysqli_query($db, "UPDATE mail SET ref=ref-1 ".
+		  "WHERE id='$row[0]'" );
     }
-    $res = mysql_query("UPDATE msg SET folder=0 ".
+    $res = mysqli_query($db, "UPDATE msg SET folder=0 ".
 			 "WHERE planet_id='$Planetid' ".
-			 "AND folder='$folder'", $db);
+			 "AND folder='$folder'" );
   }
 }
 
-if ($save && $folder!=3) {
-  $res = mysql_query("UPDATE msg SET folder=3 ".
+if (ISSET($save) && $folder!=3) {
+  $res = mysqli_query($db, "UPDATE msg SET folder=3 ".
 		     "WHERE mail_id='$save' AND planet_id='$Planetid' ".
-		     "AND folder='$folder'", $db);
+		     "AND folder='$folder'" );
 }
 
-if ($save_all && $folder!=3) {
-  $res = mysql_query("UPDATE msg SET folder=3 ".
+if (ISSET($save_all) && $folder!=3) {
+  $res = mysqli_query($db, "UPDATE msg SET folder=3 ".
 		     "WHERE planet_id='$Planetid' ".
-		     "AND folder='$folder'", $db);
+		     "AND folder='$folder'" );
 }
 
 titlebox("Messages");
@@ -252,12 +257,12 @@ titlebox("Messages");
 msg_menu($folder);
 
 $q = "SELECT moc FROM galaxy WHERE x='$myrow[x]' AND y='$myrow[y]' AND moc='$Planetid'";
-$res = mysql_query($q, $db);
-if (mysql_num_rows($res) == 1 || $Planetid==1) {
-  moc_menu($myrow[x], $myrow[y]);
+$res = mysqli_query($db, $q );
+if (mysqli_num_rows($res) == 1 || $Planetid==1) {
+  moc_menu($myrow["x"], $myrow["y"]);
 }
 
-if ($new || $reply || $forward || $send_to) {
+if (ISSET($new) || ISSET($reply) || ISSET($forward) || ISSET($send_to)) {
   send_message_form(650);
 } else {
   $q = "SELECT mail.id AS id, mail.date AS date, mail.subject AS subject, ".
@@ -267,10 +272,10 @@ if ($new || $reply || $forward || $send_to) {
      "AND mail.id=msg.mail_id ".
      "ORDER BY mail.date DESC";
 
-  $result = mysql_query ($q, $db);
+  $result = mysqli_query ($db, $q );
   
-  if ($result && mysql_num_rows($result) > 0) {
-    while ($row=mysql_fetch_array($result)) {
+  if ($result && mysqli_num_rows($result) > 0) {
+    while ($row=mysqli_fetch_array($result)) {
       print_mail ($row);
     }
   }

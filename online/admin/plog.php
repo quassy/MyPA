@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,12 +22,12 @@
 require_once "admhead.php";
 require_once "admform.php";
 
-if ($submit && $playerid && $playerid !="") {
+if (ISSET($submit) && ISSET($playerid) && $playerid !="") {
   $q = "SELECT leader,planetname FROM planet  WHERE id='$playerid'";
-  $result = mysql_query ($q, $db);
+  $result = mysqli_query ($db, $q );
 
-  if ($result && mysql_num_rows($result) > 0) {
-    $row = mysql_fetch_row($result);
+  if ($result && mysqli_num_rows($result) > 0) {
+    $row = mysqli_fetch_row($result);
     $id = $playerid;
     $pleader = $row[0];
     $pname = $row[1];
@@ -45,7 +45,7 @@ if ($submit && $playerid && $playerid !="") {
 <br>
 <table  width="650" border="1" cellpadding="2" >
 <tr>
-<form method="post" action="<?php echo $PHP_SELF?>">
+<form method="post" action="<?php echo $_SERVER["PHP_SELF"]?>">
   <td align="center" class="a">Enter target leader:</td>
   <td><input type="text" name="playerid" size="25"></td>
   <td colspan="2"><input type=submit value="  Search  " name=submit></td>
@@ -58,10 +58,10 @@ if ($submit && $playerid && $playerid !="") {
 <tr>
 <form method="post" action="
 <?php 
-  if($submit==1||$id>0) 
-    echo "$PHP_SELF?submit=1&playerid=$id"; 
+  if(ISSET($submit) && $submit==1||$id>0) 
+    echo "$_SERVER[PHP_SELF]?submit=1&playerid=$id"; 
   else 
-   echo $PHP_SELF; 
+   echo $_SERVER["PHP_SELF"]; 
 ?>">
   <td>Filter</td>
   <td><select name="a">
@@ -144,9 +144,11 @@ if ($submit && $playerid && $playerid !="") {
 $where = "";
 $f = "";
 
-if ($id>0 || ($id != 0 && $filter) || ($data!="" && $submit==1)) {
+if ((ISSET($id) && $id>0) || 
+    (ISSET($id) && $id!= 0 && ISSET($filter)) || 
+    (ISSET($data) && $submit==1)) {
 
-  if ($filter) {
+  if (ISSET($filter)) {
     if ($a != 0 && $v != 0) {
       $where = "";
       if ($a==1) $where .= "class =";
@@ -174,10 +176,10 @@ if ($id>0 || ($id != 0 && $filter) || ($data!="" && $submit==1)) {
     $where = " AND $where ";
   }
 
-  if ($data!="") {
+  if (ISSET($data) && $data!="") {
     $q = "SELECT stamp,class,type,data,planet_id FROM logging ".
        "WHERE data='$data' ORDER BY stamp DESC LIMIT 400";
-  } else if ($id>0) {
+  } else if (ISSET($id) && $id>0) {
     $q = "SELECT stamp,class,type,data,planet_id FROM logging ".
        "WHERE planet_id='$id' $where ORDER BY stamp DESC LIMIT 400";
   } else {
@@ -185,17 +187,17 @@ if ($id>0 || ($id != 0 && $filter) || ($data!="" && $submit==1)) {
        "WHERE planet_id!=0 $where ORDER BY stamp DESC LIMIT 400";
   }
   echo "[$q]<br>\n";
-  $result = mysql_query ($q, $db);
+  $result = mysqli_query ($db, $q );
 
-  if ($result && mysql_num_rows($result) > 0) {
+  if ($result && mysqli_num_rows($result) > 0) {
     echo "<table width=650 border=1 cellpadding=2>\n";
-    if ($data!="") 
+    if (ISSET($data) && $data!="") 
       echo "<tr class=a><th align=center colspan=5>".
          "Logging: [$data]</th></tr>\n";
     else 
       echo "<tr class=a><th align=center colspan=5>".
          "Logging: $pleader of $pname</th></tr>\n";
-    while ($row=mysql_fetch_array($result)) {
+    while ($row=mysqli_fetch_array($result)) {
       echo "<tr><td>$row[0]</td><td>";
 	// class
 	switch($row[1]) {
@@ -255,12 +257,12 @@ if ($id>0 || ($id != 0 && $filter) || ($data!="" && $submit==1)) {
 	if ($row[3] != "") {
 	  $data = $row[3];
           if ( ereg ("([^\[]*)\[([0-9]*)].*", $data, $out_id)) {
-            // echo "<td><a href=\"$PHP_SELF?submit=1&data=$data$f\">$out_id[1]</a> [";
+            // echo "<td><a href=\"$_SERVER[PHP_SELF]?submit=1&data=$data$f\">$out_id[1]</a> [";
             echo "<td>$out_id[1] [";
             echo "<a href=\"/admin/pinfo.php?submit=1&playerid=$out_id[2]\">$out_id[2]</a>]</td>";
           } else {
             if ($row[1]==1 && $row[2]==1) 
-               echo "<td><a href=\"$PHP_SELF?submit=1&data=$row[3]$f\">$row[3]</a></td>";
+               echo "<td><a href=\"$_SERVER[PHP_SELF]?submit=1&data=$row[3]$f\">$row[3]</a></td>";
             else
                echo "<td>$row[3]</td>";
           }

@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
  */
 
 require "standard.php";
-require "planet_util.php";
+require "planet_util.inc";
 require "news_util.php";
 
 require "scan_util_2.inc";
@@ -56,13 +56,13 @@ function prod_scan ($scan, $num) {
   $num = (int) $num;
 
   if (!$num || $num < 1) return;
-  $res = mysql_query ("SELECT metal, crystal, eonium, build_ticks ".
+  $res = mysqli_query ($db, "SELECT metal, crystal, eonium, build_ticks ".
 		      "FROM scan_class AS sc, rc WHERE sc.id='$scan' ".
 		      "AND rc.rc_id=sc.rc_id AND rc.status=3 ".
-		      "AND rc.planet_id='$Planetid'", $db);
+		      "AND rc.planet_id='$Planetid'" );
 
-  if (mysql_num_rows($res) == 1) {
-    $price = mysql_fetch_row($res);
+  if (mysqli_num_rows($res) == 1) {
+    $price = mysqli_fetch_row($res);
     
     if ( $myrow["metal"] < ($price[0] * $num) ) {
       $num = (int) ($myrow["metal"] / $price[0]);
@@ -82,15 +82,15 @@ function prod_scan ($scan, $num) {
       $myrow["crystal"] -= $cc;
       $myrow["eonium"]  -= $ce;
 
-      $result = mysql_query("UPDATE planet SET metal='$myrow[metal]',".
+      $result = mysqli_query($db, "UPDATE planet SET metal='$myrow[metal]',".
 		            "crystal='$myrow[crystal]',".
 			    "eonium='$myrow[eonium]' ".
 			    "WHERE id='$Planetid' ".
-                            "AND metal>='$cm' AND crystal>='$cc' AND eonium>='$ce'", $db);
-      if (mysql_affected_rows($db)==1) {
+                            "AND metal>='$cm' AND crystal>='$cc' AND eonium>='$ce'" );
+      if (mysqli_affected_rows($db)==1) {
         $q = "INSERT DELAYED INTO scan_build SET planet_id='$Planetid',scan_id='$scan',".
   	     "build_ticks=$price[3], num=$num";
-        $res = mysql_query ($q, $db);
+        $res = mysqli_query ($db, $q );
       }
     }
   }
@@ -102,7 +102,7 @@ function scan_roids ($num) {
   $q = "SELECT num,wave_id FROM scan ".
      "WHERE (wave_id=1 OR wave_id=3) AND planet_id='$Planetid'";
 
-  $result = mysql_query($q, $db);
+  $result = mysqli_query($db, $q );
 
   // preset
   $amps  = 0;
@@ -110,8 +110,8 @@ function scan_roids ($num) {
 
   $num = (int) $num;
 
-  if ($result && mysql_num_rows($result)>0) {
-    while ($row = mysql_fetch_row($result)) {
+  if ($result && mysqli_num_rows($result)>0) {
+    while ($row = mysqli_fetch_row($result)) {
       if ($row[1] == 1) $amps =$row[0]; 
       if ($row[1] == 3) $scans=$row[0]; 
     }
@@ -150,12 +150,12 @@ function scan_roids ($num) {
 
     $q = "UPDATE scan SET num=num-'$scans' ".
        "WHERE planet_id='$Planetid' AND wave_id=3";
-    mysql_query($q, $db);
+    mysqli_query($db, $q );
 
     if ( $total_found ) {
       $q = "UPDATE planet SET uniniroids=uniniroids+'$total_found' ".
 	 "WHERE id='$Planetid'";
-      mysql_query($q, $db);
+      mysqli_query($db, $q );
     }
     $msg = "Found a Total of $total_found Asteroids";
   }
@@ -164,34 +164,36 @@ function scan_roids ($num) {
 
 $msg = "";
 
-if ($submit) {
+if (ISSET($submit)) {
   /* aeusserst uncooles handling */
-  if ($scan_1) prod_scan (1, $scan_1);
-  if ($scan_2) prod_scan (2, $scan_2);
-  if ($scan_3) prod_scan (3, $scan_3);
-  if ($scan_4) prod_scan (4, $scan_4);
-  if ($scan_5) prod_scan (5, $scan_5);
-  if ($scan_6) prod_scan (6, $scan_6);
-  if ($scan_7) prod_scan (7, $scan_7);
-  if ($scan_8) prod_scan (8, $scan_8);
+  if (ISSET($scan_1)) prod_scan (1, $scan_1);
+  if (ISSET($scan_2)) prod_scan (2, $scan_2);
+  if (ISSET($scan_3)) prod_scan (3, $scan_3);
+  if (ISSET($scan_4)) prod_scan (4, $scan_4);
+  if (ISSET($scan_5)) prod_scan (5, $scan_5);
+  if (ISSET($scan_6)) prod_scan (6, $scan_6);
+  if (ISSET($scan_7)) prod_scan (7, $scan_7);
+  if (ISSET($scan_8)) prod_scan (8, $scan_8);
 }
 
 /* top table is written now */
 top_header($myrow);
 
-if ($search && $roid) {
+if (ISSET($search) && ISSET($roid)) {
   $roid = (int) $roid;
   scan_roids ($roid);
 }
 
-if ($scan && $number && $x && $y && $z) {
+if (ISSET($scan) && ISSET($number) && ISSET($x) && ISSET($y) && ISSET($z)) {
   echo "<br>\n";
   $number = (int) $number;
   $number = ($number>1000?1000:$number);
   $reach = scan_target ($scan, $x, $y, $z, $number);
 
   if ($reach && $scan != 7) $save_link =
-    "<a href=\"$PHP_SELF?save=$scan&x=$x&y=$y&z=$z\">Save scan</a>";
+    "<a href=\"$_SERVER[PHP_SELF]?save=$scan&x=$x&y=$y&z=$z\">Save scan</a>";
+
+  if (!ISSET($save_link)) $save_link = "";
 
   echo <<<EOF
 <center>
@@ -202,19 +204,19 @@ if ($scan && $number && $x && $y && $z) {
 </center>
 EOF;
 
-} else if ($save && $x && $y && $z ) {
+} else if (ISSET($save) && ISSET($x) && ISSET($y) && ISSET($z) ) {
   $tid = get_id ($x, $y, $z);
 
   if ($tid) {
 
     $q = "SELECT id,data FROM journal WHERE planet_id='$Planetid' ".
        "AND target_id='$tid' AND type='$save'"; // AND hidden=1
-    $result = mysql_query ($q, $db);
+    $result = mysqli_query ($db, $q );
 
-    if ($result && mysql_num_rows($result) > 0) {
-      $row = mysql_fetch_row($result);
+    if ($result && mysqli_num_rows($result) > 0) {
+      $row = mysqli_fetch_row($result);
       echo "<br>\n$row[1]";
-      mysql_query ("UPDATE journal SET hidden=0 WHERE id=$row[0]", $db);
+      mysqli_query ($db, "UPDATE journal SET hidden=0 WHERE id=$row[0]" );
 
       echo <<<EOF
 <center>
@@ -236,21 +238,21 @@ $q = "SELECT sc.id, sc.name FROM scan, scan_class AS sc ".
      "WHERE scan.planet_id='$Planetid' AND scan.wave_id = sc.id ".
      "AND scan.num > 0 AND sc.id > 1 AND sc.id != 6 ORDER BY sc.id ASC";
 
-$result = mysql_query ($q, $db);
-if ($result && mysql_num_rows($result) > 0) {
+$result = mysqli_query ($db, $q );
+if ($result && mysqli_num_rows($result) > 0) {
 
   // preset
   $roids_scan_found=0;
   $opt = "";
 
   // have some scans available
-  while ($row = mysql_fetch_row($result)) {
+  while ($row = mysqli_fetch_row($result)) {
     if ($row[0] == 3) {
       /* roid scan */
       $roids_scan_found=1;
     } else {
       /* normal scans */
-      if ($scan && $scan == $row[0])
+      if (ISSET($scan) && $scan == $row[0])
 	$opt .= "<option selected value=\"$row[0]\">$row[1]</option>";
       else
 	$opt .= "<option value=\"$row[0]\">$row[1]</option>";
@@ -262,14 +264,18 @@ if ($result && mysql_num_rows($result) > 0) {
     "<tr><th width=\"175\">Wave Type</th><th width=\"175\">Target</th>".
     "<th width=\"150\">Number</th><th width=\"150\">Execute</th></tr>\n";
 
-  if ($number == "" || $number == 0) $number = 1;
+  if (!ISSET($number) || $number == "" || $number == 0) $number = 1;
    if ($opt != "") {
-     echo "<form method=\"post\" action=\"$PHP_SELF\">".
+     $xx = $yy = $zz = "";
+     if (ISSET($x)) $xx = $x;
+     if (ISSET($y)) $yy = $y;
+     if (ISSET($z)) $zz = $z;
+     echo "<form method=\"post\" action=\"$_SERVER[PHP_SELF]\">".
        "<tr><td align=\"center\"><select name=\"scan\">$opt</select></td>".
        "<td align=\"center\">".
-       "<input type=\"text\" name=\"x\" size=\"4\" maxlength=\"3\" value=\"$x\">&nbsp".
-       "<input type=\"text\" name=\"y\" size=\"3\" maxlength=\"2\" value=\"$y\">&nbsp".
-       "<input type=\"text\" name=\"z\" size=\"3\" maxlength=\"2\" value=\"$z\"></td>".
+       "<input type=\"text\" name=\"x\" size=\"4\" maxlength=\"3\" value=\"$xx\">&nbsp".
+       "<input type=\"text\" name=\"y\" size=\"3\" maxlength=\"2\" value=\"$yy\">&nbsp".
+       "<input type=\"text\" name=\"z\" size=\"3\" maxlength=\"2\" value=\"$zz\"></td>".
        "<td align=\"center\">".
        "<input type=\"text\" name=\"number\" size=\"8\" maxlength=\"4\" value=\"$number\"></td>".
        "<td align=\"center\">".
@@ -278,7 +284,7 @@ if ($result && mysql_num_rows($result) > 0) {
    }
 
    if ($roids_scan_found) {
-     echo "<form method=\"post\" action=\"$PHP_SELF\">".
+     echo "<form method=\"post\" action=\"$_SERVER[PHP_SELF]\">".
        "<tr><td align=\"center\">Asteroid Scan</td><td>&nbsp;</td>".
        "<td align=\"center\">".
        "<input type=\"text\" name=\"roid\" size=\"8\" maxlength=\"6\"></td>".
@@ -291,7 +297,7 @@ if ($result && mysql_num_rows($result) > 0) {
 }
 ?>
 
-<form method="post" action="<?php echo $PHP_SELF?>">
+<form method="post" action="<?php echo $_SERVER["PHP_SELF"]?>">
 <table border="1" width="650">
 <tr><th colspan="5" class="a">Purchase Energy Packs</th></tr>
 <tr><th width="110">Wave Type</th>
@@ -306,14 +312,14 @@ $q = "SELECT sc.id, sc.name, sc.description, sc.metal, sc.crystal, sc.eonium, ".
      "sc.build_ticks FROM scan_class AS sc, rc ".
      "WHERE rc.planet_id='$Planetid' AND rc.status=3 AND sc.rc_id=rc.rc_id ";
 
-$result = mysql_query ($q, $db);
-if ($result && mysql_num_rows($result) > 0) {
+$result = mysqli_query ($db, $q );
+if ($result && mysqli_num_rows($result) > 0) {
 
-  while ($myunit = mysql_fetch_row($result)) {
+  while ($myunit = mysqli_fetch_row($result)) {
 
-    $nr = mysql_query ("SELECT sum(num) FROM scan WHERE ".
-		       "planet_id='$Planetid' AND wave_id='$myunit[0]'", $db);
-    $stock = mysql_fetch_row ($nr);
+    $nr = mysqli_query ($db, "SELECT sum(num) FROM scan WHERE ".
+		       "planet_id='$Planetid' AND wave_id='$myunit[0]'" );
+    $stock = mysqli_fetch_row ($nr);
     if ( !$stock[0]) $stock[0] = 0;
 
     print_scan_row ($myunit, $stock[0]);
@@ -349,13 +355,13 @@ $qq = "SELECT scan_id, sum(num), build_ticks FROM scan_build ".
       "WHERE planet_id='$Planetid' ".
       "AND build_ticks!=0 GROUP BY scan_id, build_ticks";
 
-$result = mysql_query ($q, $db);
-if (mysql_num_rows($result) > 0) {
+$result = mysqli_query ($db, $q );
+if (mysqli_num_rows($result) > 0) {
 
-  $prod_res = mysql_query ($qq, $db);
-  $mybuild = mysql_fetch_row($prod_res);
+  $prod_res = mysqli_query ($db, $qq );
+  $mybuild = mysqli_fetch_row($prod_res);
 
-  while ($myunit = mysql_fetch_row($result)) {
+  while ($myunit = mysqli_fetch_row($result)) {
     /* the name of it */
     echo "<tr><td>$myunit[1]</td>";
 
@@ -365,7 +371,7 @@ if (mysql_num_rows($result) > 0) {
 	if ($i == $mybuild[2] && $mybuild && $mybuild[0] == $myunit[0]) {
 	  /* in bau */
 	  echo "<td>$mybuild[1]</td>";
-	  $mybuild = mysql_fetch_row($prod_res);
+	  $mybuild = mysqli_fetch_row($prod_res);
 	} else {
 	  echo "<td>&nbsp;</td>";
 	}

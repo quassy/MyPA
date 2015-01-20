@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ if ($allid && $Planetid<=2) {
   $myrow["alliance_id"] = 0;
   print_alliance_status ($all);
 } else {
-  $ref = "$PHP_SELF?allid=";
+  $ref = "$_SERVER[PHP_SELF]?allid=";
   list_alliances_admin($ref);
 }
 

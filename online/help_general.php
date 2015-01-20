@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,6 +48,8 @@ web-anonymiser may be banned otherwise.</td></tr>
 names/pictures/posts/mails/whatever may lead to direct deletion.</td></tr>
 <tr><td colspan=2>&nbsp;</td></tr>
 <tr><td colspan=2>As far as possible standard language is english.</td></tr>
+<tr><td colspan=2>&nbsp;</td></tr>
+<tr><td colspan=2><b>By logging into this game You accept these terms.</td></tr>
 <tr><td colspan=2>&nbsp;</td></tr>
 <tr><td colspan=2 align=left>Khan, 1. Nov 2002</td></tr>
 <tr><td colspan=2 align=left><em>Last update: 11. Mar 2003</em></td></tr>

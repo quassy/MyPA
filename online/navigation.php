@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -63,7 +63,7 @@ if ($mysettings & 32 ||
 }
 
 
-if ($imgpath && $imgpath != "") {
+if (ISSET($imgpath) && $imgpath != "") {
   
 echo "<html>\n<head>\n";
 if ($mysettings&32)
@@ -96,7 +96,7 @@ EOF;
 print_td("overview","Overview");
 print_td("galstatus","Galstatus");
 print_empty();
-if ($help) {
+if (ISSET($help) && $help) {
   print_td("navigation", "Command", "navigation");
 
   if ($help) {
@@ -139,8 +139,8 @@ if ($help) {
   print_empty();
   print_td("galaxy","Galaxy");
   print_td("universe","Universe");
-  if ($alliance) {
-  print_empty();
+  if (ISSET($alliance) && $alliance) {
+    print_empty();
     print_td("navigation","Alliance","navigation","alliance=0");
     print_td("alliance","Main");
     print_td("alllist","Listing");

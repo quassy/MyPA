@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,15 +22,15 @@
 function do_log_id ($id, $class, $event, $data) {
   global $db;
 
-  mysql_query ("INSERT INTO logging SET planet_id='$id', stamp=NOW(),".
-    "type='$event', class='$class', data='$data'", $db);
+  mysqli_query ($db, "INSERT INTO logging SET planet_id='$id', stamp=NOW(),".
+    "type='$event', class='$class', data='$data'" );
 }
 
 function do_log_me ($class, $event, $data) {
   global $db, $Planetid;
 
- $r=mysql_query ("INSERT INTO logging SET planet_id='$Planetid',".
-	"stamp=NOW(),type='$event', class='$class', data='$data'", $db);
+ $r=mysqli_query ($db, "INSERT INTO logging SET planet_id='$Planetid',".
+	"stamp=NOW(),type='$event', class='$class', data='$data'" );
 }
 
 ?>

@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -61,34 +61,34 @@ function check_length ($l, $n, $p) {
 function check_taken_planet ($n, $p) {
   global $db;
 
-  $result = mysql_query("SELECT * FROM planet " .
+  $result = mysqli_query("SELECT * FROM planet " .
                         "WHERE leader='$n' OR planetname='$p'", $db);
   if (!$result) db_error();
-  if (mysql_num_rows($result) == 0) return 0;
+  if (mysqli_num_rows($result) == 0) return 0;
 
   $ret = 32;
-  $result = mysql_query("SELECT * FROM planet " .
+  $result = mysqli_query("SELECT * FROM planet " .
 			"WHERE leader='$n' ", $db);
 
   if (!$result) db_error();
-  if (mysql_num_rows($result) == 1) $ret = 31;
+  if (mysqli_num_rows($result) == 1) $ret = 31;
   return $ret;
 }
 
 function check_taken_user ($l, $e) {
   global $db;
 
-  $result = mysql_query("SELECT * FROM user " .
+  $result = mysqli_query("SELECT * FROM user " .
                         "WHERE login='$l' OR email='$e'", $db);
   if (!$result) db_error();
-  if (mysql_num_rows($result) == 0) return 0;
+  if (mysqli_num_rows($result) == 0) return 0;
 
   $ret = 12;
-  $result = mysql_query("SELECT * FROM user " .
+  $result = mysqli_query("SELECT * FROM user " .
 			"WHERE login='$l' ", $db);
 
   if (!$result) db_error();
-  if (mysql_num_rows($result) == 1) $ret = 11;
+  if (mysqli_num_rows($result) == 1) $ret = 11;
   return $ret;
 }
 
@@ -104,19 +104,19 @@ function send_password($pid) {
   global $game, $db, $round;
 
   $q = "SELECT email, login, password FROM user WHERE planet_id=$pid ";
-  $result = mysql_query($q, $db);
+  $result = mysqli_query($q, $db);
     
-  if ($result && mysql_num_rows($result) == 1) {
-    $rowu = mysql_fetch_array($result);
+  if ($result && mysqli_num_rows($result) == 1) {
+    $rowu = mysqli_fetch_array($result);
   } else {
     db_error("DBerror: sending password");
   }
 
   $q = "SELECT leader, planetname, x, y, z FROM planet WHERE id=$pid ";
-  $result = mysql_query($q, $db);
+  $result = mysqli_query($q, $db);
   
-  if ($result && mysql_num_rows($result) == 1) {
-    $rowp = mysql_fetch_array($result);
+  if ($result && mysqli_num_rows($result) == 1) {
+    $rowp = mysqli_fetch_array($result);
   } else {
     db_error("DBerror: sending password");
   }
@@ -206,8 +206,8 @@ if ($submit && $submit != "") {
   if (!$taken) {
     /* jetzt sollte es tun */
 
-    $result = mysql_query("SELECT tick FROM general"); 
-    $row = mysql_fetch_row($result);
+    $result = mysqli_query("SELECT tick FROM general"); 
+    $row = mysqli_fetch_row($result);
     $mytick = $row[0];
 
     $pw_tmp = md5 (uniqid (rand()));
@@ -216,14 +216,14 @@ if ($submit && $submit != "") {
     $res = get_new_coords ($x, $y, $z);
     if ($res) db_error("Sorry universe is full!!");
 
-    $result = mysql_query("INSERT into planet set planetname='$planet'," .
+    $result = mysqli_query("INSERT into planet set planetname='$planet'," .
 			  "leader='$nick',mode=0xF1,x=$x,y=$y,z=$z", $db);
     if (!$result) db_error("DBerror: Insert planet");
 
-    $planet_id = mysql_insert_id ($db);
+    $planet_id = mysqli_insert_id ($db);
     if (!$planet_id) db_error("DBerror: Get Planetid");
 
-    $result = mysql_query("INSERT into user ".
+    $result = mysqli_query("INSERT into user ".
 			  "SET login='$login',password='$pw'," .
 			  "email='$email',planet_id='$planet_id',".
 			  "signup=NOW(),first_tick='$mytick'",$db);
@@ -232,7 +232,7 @@ if ($submit && $submit != "") {
 
     /* add galaxy counter
      */
-    $result = mysql_query ("UPDATE galaxy SET members=members+1 ".
+    $result = mysqli_query ("UPDATE galaxy SET members=members+1 ".
                            "WHERE x=$x AND y=$y", $db);
     if (!$result) db_error("DBerror: Update galaxy");
 
@@ -299,7 +299,7 @@ if ($submit) {
 
 echo <<<EOF
 <br>
-<FORM method="post" action="$PHP_SELF">
+<FORM method="post" action="$_SERVER[PHP_SELF]">
 <TABLE border=1><tr><td>
 <TABLE border=0 width=450 cellspacing=5>
   <tr><td colspan=3>&nbsp;</td></tr>

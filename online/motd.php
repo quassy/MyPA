@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,9 +22,8 @@
 ?>
 <br>
 <center>
-Please read the <a href=/forum.php?fthread=496>Announcement</a>.<br>
-<br><br>
-<b>Hope you had fun :-)</b>
+<br>
+<b>Have fun :-)</b>
 </center>
 <br>
 <br>

@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,10 +37,10 @@ if ($submit) {
   if ($login && $email) {
     $q = "SELECT password FROM user WHERE login='$login' ".
        "AND email='$email'";
-    $result = mysql_query($q, $db);
+    $result = mysqli_query($q, $db);
     
-    if ($result && mysql_num_rows($result) == 1) {
-      $row = mysql_fetch_row($result);
+    if ($result && mysqli_num_rows($result) == 1) {
+      $row = mysqli_fetch_row($result);
 
       mail("$email", "$game password reminder", 
 	   "\nLogin: $login\nPassword: $row[0]\n\nHave Fun!!\n",
@@ -67,7 +67,7 @@ if ($submit) {
 
   
 <tr><td>
-<FORM method="post" action="<?php echo $PHP_SELF?>">
+<FORM method="post" action="<?php echo $_SERVER[PHP_SELF]?>">
 <TABLE width=400 border=0 cellpadding=4>
   <TR>
     <TH height=40 align="center" colspan="2"><br>Enter your login and email:</TH>

@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
  */
 
 require "standard.php";
-require "planet_util.php";
+require "planet_util.inc";
 require "fleet_util.php";
 require "news_util.php";
 require "logging.php";
@@ -39,7 +39,7 @@ function set_hostile ($id, $dir) {
       "WHERE x='$coords[x]' AND y='$coords[y]'".
       "AND id!='$id'";
 
-  $result = mysql_query ($q, $db);
+  $result = mysqli_query ($db, $q );
 
   if ($dir > 0) {
     $q = "UPDATE planet SET has_hostile=has_hostile+1 ". 
@@ -50,7 +50,7 @@ function set_hostile ($id, $dir) {
     $q = "UPDATE planet SET has_hostile=has_hostile-1 ".
       "WHERE id='$id'";
 
-  $result = mysql_query ($q, $db);
+  $result = mysqli_query ($db, $q );
 }
 
 function set_friendly ($id, $dir) {
@@ -66,7 +66,7 @@ function set_friendly ($id, $dir) {
     $q = "UPDATE planet SET has_friendly=has_friendly-1 ".
       "WHERE id='$id'";
 
-  $result = mysql_query ($q, $db);
+  $result = mysqli_query ($db, $q );
 }
 
 function check_self_attack ($id, $type) {
@@ -76,9 +76,9 @@ function check_self_attack ($id, $type) {
 
   $q = "SELECT fleet_id FROM fleet WHERE planet_id='$Planetid' ".
        "AND target_id='$id' AND type ".$t;
-  $result = mysql_query ($q, $db);
+  $result = mysqli_query ($db, $q );
 
-  if ($result && mysql_num_rows($result)>0) 
+  if ($result && mysqli_num_rows($result)>0) 
     return 1;
   else
     return 0;
@@ -92,10 +92,10 @@ function get_attac_fleet ($id) {
     "WHERE fleet.target_id='$id' AND fleet.type>10 ".
     "AND fleet.fleet_id=units.id AND units.unit_id=unit_class.id";
 
-  $result = mysql_query ($q, $db);
+  $result = mysqli_query ($db, $q );
 
-  if ($result && mysql_num_rows($result)>0) {
-    $row = mysql_fetch_row ($result);
+  if ($result && mysqli_num_rows($result)>0) {
+    $row = mysqli_fetch_row ($result);
     return $row[0];
   } else
     return 0;
@@ -104,11 +104,11 @@ function get_attac_fleet ($id) {
 function get_num_units ($fleet_id, $unit_id) {
   global $db;
 
-  $res = mysql_query ("SELECT SUM(num) from units ".
-		      "WHERE id=$fleet_id AND unit_id=$unit_id",$db);
+  $res = mysqli_query ($db, "SELECT SUM(num) from units ".
+		      "WHERE id=$fleet_id AND unit_id=$unit_id");
 
-  if ($res && mysql_num_rows($res) >0) {
-    $r = mysql_fetch_row($res);
+  if ($res && mysqli_num_rows($res) >0) {
+    $r = mysqli_fetch_row($res);
     return $r[0];
   }
   return 0;
@@ -173,15 +173,15 @@ function transfer_ship ($type, $num, $from, $to) {
   if ($from == 255) $from = 0;
   if ($to == 255) $to = 0;
 
-  $result = mysql_query ("SELECT num, fleet_id FROM fleet where target_id=0 ".
+  $result = mysqli_query ($db, "SELECT num, fleet_id FROM fleet where target_id=0 ".
 			 "AND ticks=0 AND planet_id='$Planetid' ".
-			 "AND (num=$from or num=$to)", $db);
-  if (!$result || mysql_num_rows($result) != 2) {
+			 "AND (num=$from or num=$to)" );
+  if (!$result || mysqli_num_rows($result) != 2) {
     return "Due to military blabla Fleets must reside in home ".
       "sector to transfer ships<br>\n";
   }
 
-  while ($row = mysql_fetch_row($result)) 
+  while ($row = mysqli_fetch_row($result)) 
     $fleet[$row[0]] = $row[1];
   
   if ($type == 255) {
@@ -189,43 +189,43 @@ function transfer_ship ($type, $num, $from, $to) {
     $q = "UPDATE units SET id='$fleet[$to]' WHERE id='$fleet[$from]' ".
        "AND unit_id!=$missile_id";
 
-    $result = mysql_query ($q, $db);
+    $result = mysqli_query ($db, $q );
     if (!$result) 
       return "Fleet movement failed<br>\n";
   } else {
     //
     // Hier lock start
-    mysql_query ("LOCK TABLES units WRITE", $db);
+    mysqli_query ($db, "LOCK TABLES units WRITE" );
 
     $q = "SELECT SUM(num) FROM units ".
        "WHERE id='$fleet[$from]' AND unit_id='$type'";
 
-    $result = mysql_query($q, $db);
+    $result = mysqli_query($db, $q );
 
-    if ($result && mysql_num_rows($result)==1) {
-      $row = mysql_fetch_row($result);
+    if ($result && mysqli_num_rows($result)==1) {
+      $row = mysqli_fetch_row($result);
       if ($row[0] > 0) {
 
         if ($num == 0) $num = $row[0];
 
 	$q = "DELETE FROM units where id='$fleet[$from]' AND unit_id='$type'";
-	$result = mysql_query($q, $db);
+	$result = mysqli_query($db, $q );
 
 	if ($row[0] > $num) {
 	  $rest = $row[0] - $num;
 	  $q = "INSERT INTO units SET id='$fleet[$from]',".
 	     "num='$rest',unit_id='$type'";
-	  $result = mysql_query($q, $db);
+	  $result = mysqli_query($db, $q );
 	  $row[0] = $num;
 	}
 	$q = "INSERT INTO units SET id='$fleet[$to]',".
 	   "num='$row[0]',unit_id='$type'";
-	$result = mysql_query($q, $db);
+	$result = mysqli_query($db, $q );
       }
     }
     // Hier lock end
     //
-    mysql_query ("UNLOCK TABLES", $db);
+    mysqli_query ($db, "UNLOCK TABLES" );
   }
 
   return "";
@@ -295,15 +295,15 @@ function send_fleet ($flnum, $order, $x, $y, $z) {
   global $db, $Planetid, $myrow, $havoc;
   $msg = "";
 
-  if ($x==$myrow[x] && $y==$myrow[y] && $z==$myrow[z]) {
+  if ($x==$myrow["x"] && $y==$myrow["y"] && $z==$myrow["z"]) {
     return "Target coords banned ;-)";
   }
 
   $q = "SELECT sum(units.num) FROM units,fleet WHERE fleet.planet_id='$Planetid' ".
        "AND fleet.num='$flnum' AND fleet.fleet_id=units.id";
-  $result = mysql_query($q, $db);
-  if ($result  && mysql_num_rows($result) > 0) {
-    $row = mysql_fetch_row ($result);
+  $result = mysqli_query($db, $q );
+  if ($result  && mysqli_num_rows($result) > 0) {
+    $row = mysqli_fetch_row ($result);
     if ($row[0]<1)
       return "You dont have ships in your fleet"; 
   } else {
@@ -312,12 +312,12 @@ function send_fleet ($flnum, $order, $x, $y, $z) {
 
   if ($order == 255) {
 
-    $result = mysql_query("SELECT target_id,ticks,type,full_eta FROM fleet ".
+    $result = mysqli_query($db, "SELECT target_id,ticks,type,full_eta FROM fleet ".
 			  "WHERE planet_id='$Planetid' AND num='$flnum' ".
-			  "AND target_id!=0", $db);
+			  "AND target_id!=0" );
 
-    if ($result && mysql_num_rows($result) > 0) {
-      $row = mysql_fetch_row ($result);
+    if ($result && mysqli_num_rows($result) > 0) {
+      $row = mysqli_fetch_row ($result);
     
       if ($row[2]<10) {
 	set_friendly($row[0],-1);
@@ -328,25 +328,25 @@ function send_fleet ($flnum, $order, $x, $y, $z) {
         do_log_me (4,8,"Recall Att: [$row[0]]");
         do_log_id ($row[0],4,9,"Recall Hostile: [$Planetid]");
       }
-      /* $result = mysql_query ($q, $db);
+      /* $result = mysqli_query ($db, $q );
       */
 
       $eta = $row[3] - $row[1];
-      $result = mysql_query("UPDATE fleet set target_id=0,type=0, ".
+      $result = mysqli_query($db, "UPDATE fleet set target_id=0,type=0, ".
 			    "ticks='$eta',full_eta=0 ".
 			    "WHERE planet_id='$Planetid' ".
-			    "AND num='$flnum'", $db);
+			    "AND num='$flnum'" );
 
       send_msg_fleet_recall ($row[0], $eta, $row[2]);
     }
 
     return $msg;
   } else {
-    $result = mysql_query("SELECT target_id, ticks, full_eta FROM fleet ".
-			  "WHERE planet_id='$Planetid' AND num='$flnum'", $db);
+    $result = mysqli_query($db, "SELECT target_id, ticks, full_eta FROM fleet ".
+			  "WHERE planet_id='$Planetid' AND num='$flnum'" );
     $row[0] = -1;
     if ($result) 
-      $row = mysql_fetch_row ($result);
+      $row = mysqli_fetch_row ($result);
 
     if ($row[0] || $row[1] || $row[2] ) {
       return "Fleet $flnum is not at home (ETA $row[1])";
@@ -377,11 +377,11 @@ function send_fleet ($flnum, $order, $x, $y, $z) {
 	 "type='$order',full_eta='$eta' ".
 	 "WHERE num=$flnum AND planet_id='$Planetid'";
 
-      $result = mysql_query ($q, $db);
+      $result = mysqli_query ($db, $q );
       
       $myrow["eonium"] -= $fuel;
-      $result = mysql_query ("UPDATE planet SET eonium='$myrow[eonium]' ".
-				 "WHERE id='$Planetid'", $db);
+      $result = mysqli_query ($db, "UPDATE planet SET eonium='$myrow[eonium]' ".
+				 "WHERE id='$Planetid'" );
       
       if ($order<10) {
 	set_friendly($target_id,1);
@@ -407,8 +407,8 @@ function send_missile ($num, $x, $y, $z) {
   $q = "SELECT target_id,fleet_id FROM fleet ".
      "WHERE planet_id=$Planetid AND num=$number_of_fleets";
 
-  $res = mysql_query ($q, $db);
-  $row = mysql_fetch_row($res);
+  $res = mysqli_query ($db, $q );
+  $row = mysqli_fetch_row($res);
   if ($row[0] != 0) {
     return "Your Missile turrets still track current launch";
   } else {
@@ -422,10 +422,10 @@ function send_missile ($num, $x, $y, $z) {
   $q = "SELECT sum(units.num) FROM units,fleet ".
        "WHERE units.id=fleet.fleet_id AND fleet.num=0 ".
        "AND units.unit_id=$missile_id AND fleet.planet_id=$Planetid";
-  $res = mysql_query ($q, $db);
+  $res = mysqli_query ($db, $q );
 
-  if ($res && mysql_num_rows($res) > 0) {
-    $row = mysql_fetch_row($res);
+  if ($res && mysqli_num_rows($res) > 0) {
+    $row = mysqli_fetch_row($res);
     $base_missile = $row[0];
 
     if ($base_missile==0)
@@ -442,9 +442,9 @@ function send_missile ($num, $x, $y, $z) {
 
   // check for launchers
   $q = "SELECT num FROM pds WHERE planet_id=$Planetid and pds_id=25";
-  $res = mysql_query ($q, $db);
-  if ($res && mysql_num_rows($res) > 0) {
-    $row = mysql_fetch_row($res);
+  $res = mysqli_query ($db, $q );
+  if ($res && mysqli_num_rows($res) > 0) {
+    $row = mysqli_fetch_row($res);
 
     if ($row[0]==0)   return "You dont have any Missile Launchers.";
     if ($row[0]<$num) $num = $row[0];
@@ -459,38 +459,38 @@ function send_missile ($num, $x, $y, $z) {
   if ($msg != "") return $msg;
 
   // base fleet id
-  $res = mysql_query ("SELECT fleet_id FROM fleet ".
-		      "WHERE planet_id=$Planetid and num=0", $db);
-  $row = mysql_fetch_row ($res);
+  $res = mysqli_query ($db, "SELECT fleet_id FROM fleet ".
+		      "WHERE planet_id=$Planetid and num=0" );
+  $row = mysqli_fetch_row ($res);
   $base_id = $row[0];
 
   // Hier lock start
-  mysql_query ("LOCK TABLES units WRITE", $db);
+  mysqli_query ($db, "LOCK TABLES units WRITE" );
 
   // safety: also nochmal base number
-  $res = mysql_query ("SELECT sum(num) FROM units ".
-		      "WHERE id=$base_id AND unit_id=$missile_id ", $db);
-  $row = mysql_fetch_row ($res);
+  $res = mysqli_query ($db, "SELECT sum(num) FROM units ".
+		      "WHERE id=$base_id AND unit_id=$missile_id " );
+  $row = mysqli_fetch_row ($res);
   $bn = $row[0];
 
   // weg mit den alten aus der base
-  mysql_query ("DELETE FROM units WHERE id=$base_id AND unit_id=$missile_id", $db);
+  mysqli_query ($db, "DELETE FROM units WHERE id=$base_id AND unit_id=$missile_id" );
 
   if ($bn != $num) {
-    mysql_query ("INSERT INTO units VALUES($base_id,$missile_id,".
-		 ($bn - $num).")", $db);
+    mysqli_query ($db, "INSERT INTO units VALUES($base_id,$missile_id,".
+		 ($bn - $num).")" );
   }
-  mysql_query ("INSERT INTO units VALUES ($fleet_id, $missile_id, $num)", $db);
+  mysqli_query ($db, "INSERT INTO units VALUES ($fleet_id, $missile_id, $num)" );
 
   // Hier lock end
   //
-  mysql_query ("UNLOCK TABLES", $db);
+  mysqli_query ($db, "UNLOCK TABLES" );
 
   $fuel = get_target_fuel ($fleet_id, $x, $y, $z);
 
   if ($myrow["eonium"] < $fuel) {
-    mysql_query ("UPDATE units SET id=$base_id ".
-		 "WHERE id=$fleet_id", $db);
+    mysqli_query ($db, "UPDATE units SET id=$base_id ".
+		 "WHERE id=$fleet_id" );
 
     return "Not enough Fuel ($fuel > $myrow[eonium]) ".
       "for Target ($x, $y, $z)[$order]";
@@ -499,12 +499,12 @@ function send_missile ($num, $x, $y, $z) {
   $eta = get_target_eta ($fleet_id, $x, $y, $z);
 
 
-  mysql_query ("UPDATE fleet SET target_id=$target_id,full_eta=$eta,".
-	       "ticks=$eta,type=11 WHERE fleet_id=$fleet_id", $db);
+  mysqli_query ($db, "UPDATE fleet SET target_id=$target_id,full_eta=$eta,".
+	       "ticks=$eta,type=11 WHERE fleet_id=$fleet_id" );
 
   $myrow["eonium"] -= $fuel;
-  $result = mysql_query ("UPDATE planet SET eonium='$myrow[eonium]' ".
-			 "WHERE id='$Planetid'", $db);
+  $result = mysqli_query ($db, "UPDATE planet SET eonium='$myrow[eonium]' ".
+			 "WHERE id='$Planetid'" );
       
   set_hostile($target_id,1);
   
@@ -516,10 +516,13 @@ function send_missile ($num, $x, $y, $z) {
 $msg = "";
 
 /* missiles are special */
-$result = mysql_query ("SELECT id from unit_class WHERE class=6", $db);
-if ($result && mysql_num_rows($result) > 0) {
-  $row = mysql_fetch_row($result);
+$result = mysqli_query ($db, "SELECT id from unit_class WHERE class=6" );
+if ($result && mysqli_num_rows($result) > 0) {
+  $row = mysqli_fetch_row($result);
   $missile_id = $row[0];
+} else {
+  $missile_id = 0;
+  // error
 }
 
 /* generate array of ships */
@@ -530,41 +533,41 @@ $q = "SELECT units.unit_id, uc.name FROM fleet, units, ".
      "AND fleet.num<$number_of_fleets ".
      "GROUP BY units.unit_id";
 
-$result = mysql_query ($q, $db);
+$result = mysqli_query ($db, $q );
 
-if ($result && mysql_num_rows($result) > 0) {
-  while ($row = mysql_fetch_row($result)) {
+if ($result && mysqli_num_rows($result) > 0) {
+  while ($row = mysqli_fetch_row($result)) {
     $ships[$row[0]] = $row[1];
   }
 }
 $ships[255] = "All Ships";
 
-if ($transfer) {
-  if ($ship_move_0) 
+if (ISSET($transfer)) {
+  if (ISSET($ship_move_0))
     $msg .= 
       transfer_ship ($ship_move_0, $ship_number_0, $ship_from_0, $ship_to_0);
-  if ($ship_move_1) 
+  if (ISSET($ship_move_1))
     $msg .= 
       transfer_ship ($ship_move_1, $ship_number_1, $ship_from_1, $ship_to_1);
-  if ($ship_move_2) 
+  if (ISSET($ship_move_2))
     $msg .= 
       transfer_ship ($ship_move_2, $ship_number_2, $ship_from_2, $ship_to_2);
-  if ($ship_move_3) 
+  if (ISSET($ship_move_3)) 
     $msg .= 
       transfer_ship ($ship_move_3, $ship_number_3, $ship_from_3, $ship_to_3);
 }
 
 
-if ($execute) {
-  if ($fleet_1) 
+if (ISSET($execute)) {
+  if (ISSET($fleet_1)) 
     $msg .= send_fleet (1, $fleet_1, $fleet_1_x, $fleet_1_y ,$fleet_1_z);
-  if ($fleet_2) 
+  if (ISSET($fleet_2)) 
     $msg .= send_fleet (2, $fleet_2, $fleet_2_x, $fleet_2_y ,$fleet_2_z);
-  if ($fleet_3) 
+  if (ISSET($fleet_3)) 
     $msg .= send_fleet (3, $fleet_3, $fleet_3_x, $fleet_3_y ,$fleet_3_z);
 }
 
-if ($launch) {
+if (ISSET($launch)) {
   $msg .= send_missile ($miss_num, $miss_x, $miss_y, $miss_z);
 }
 
@@ -610,9 +613,9 @@ $q = "SELECT units.unit_id, fleet.num, sum(units.num), ".
   "WHERE fleet.planet_id='$Planetid' AND fleet.fleet_id=units.id ".
   "GROUP BY units.unit_id,fleet.num";
 
-$res = mysql_query($q, $db);
+$res = mysqli_query($db, $q );
 // preselect first row
-$row = mysql_fetch_row ($res);
+$row = mysqli_fetch_row ($res);
 
 $ship_opt = "";
 while (list ($num, $name) = each ($ships)) {
@@ -638,7 +641,7 @@ while (list ($num, $name) = each ($ships)) {
 	}
 
 	// fetch next
-	$row = mysql_fetch_row ($res);
+	$row = mysqli_fetch_row ($res);
       } else {
 	  echo "&nbsp;";
       }
@@ -692,7 +695,7 @@ echo "</tr>\n";
 </table>
 
 <br>
-<form method="post" action="<?php echo $PHP_SELF?>">
+<form method="post" action="<?php echo $_SERVER["PHP_SELF"]?>">
 <table border="1" width="650">
 <tr><th colspan="4" class="a">Ship Movement</th></tr>
 <tr><th width="195">Ship Type</th>
@@ -723,7 +726,7 @@ Hint: to move all ships of a type dont fill in any number</td></tr>
 </table>
 </form>
 
-<form method="post" action="<?php echo $PHP_SELF?>">
+<form method="post" action="<?php echo $_SERVER["PHP_SELF"]?>">
 <table border="1" width="650">
 <tr><th colspan="5" class="a">Fleet Movement</th></tr>
 <tr><th width="55">Fleet</th>
@@ -735,9 +738,9 @@ Hint: to move all ships of a type dont fill in any number</td></tr>
 <?php
 $q = "SELECT target_id, num, ticks, type FROM fleet WHERE planet_id=$Planetid ".
      "AND num IN (1,2,3) ORDER by num"; // ORDER BY num
-$result = mysql_query ($q, $db);
+$result = mysqli_query ($db, $q );
 
-while ($row = mysql_fetch_row($result)) {
+while ($row = mysqli_fetch_row($result)) {
   if ($row[0] == 0) {
     /* at home or on the way */
     print_target_row($row[1], $myrow["x"], $myrow["y"], $myrow["z"],
@@ -758,7 +761,7 @@ while ($row = mysql_fetch_row($result)) {
 
 if ($missile_id!=0) {
   echo <<<EOF
-<form method="post" action="$PHP_SELF">
+<form method="post" action="$_SERVER[PHP_SELF]">
 <table border="1" width="650">
 <tr><th colspan="5" class="a">Missile Attack</th></tr>
 <tr><th width="55">Group</th>
@@ -773,10 +776,10 @@ EOF;
        "WHERE units.id=fleet.fleet_id AND fleet.num=0 ".
        "AND units.unit_id=$missile_id AND fleet.planet_id=$Planetid";
 
-  $res = mysql_query ($q, $db);
+  $res = mysqli_query ($db, $q );
 
-  if ($res && mysql_num_rows($res) > 0) {
-    $row = mysql_fetch_row($res);
+  if ($res && mysqli_num_rows($res) > 0) {
+    $row = mysqli_fetch_row($res);
     $base_missile = $row[0];
 
     if ($base_missile>0) {
@@ -793,11 +796,11 @@ EOF;
        "FROM fleet WHERE planet_id=$Planetid ".
        "AND num=$number_of_fleets AND target_id!=0";
 
-  $res = mysql_query ($q, $db);
+  $res = mysqli_query ($db, $q );
 
-  if ($res && mysql_num_rows($res) > 0) {
+  if ($res && mysqli_num_rows($res) > 0) {
 
-    $row = mysql_fetch_row($res);
+    $row = mysqli_fetch_row($res);
 
     // find num units, target_xy_z
     $rowt = get_coord_name ($row[0]);

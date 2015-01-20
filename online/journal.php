@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,23 +20,23 @@
  */
 
 require "standard.php";
-require_once "planet_util.php";
+require_once "planet_util.inc";
 
-if ($clear && $clear != "") {
-  mysql_query ("DELETE LOW_PRIORITY FROM journal ".
-    "WHERE planet_id='$Planetid'", $db);
+if (ISSET($clear) && $clear != "") {
+  mysqli_query ($db, "DELETE LOW_PRIORITY FROM journal ".
+    "WHERE planet_id='$Planetid'" );
 }
 
-if ($hide && $hide != 0) {
-  mysql_query ("DELETE LOW_PRIORITY FROM journal ".
-    "WHERE planet_id='$Planetid' AND target_id='$hide'", $db);
+if (ISSET($hide) && $hide != 0) {
+  mysqli_query ($db, "DELETE LOW_PRIORITY FROM journal ".
+    "WHERE planet_id='$Planetid' AND target_id='$hide'" );
 }
 
 /* top table is written now */
 top_header($myrow);
 
 $msg = "";
-if ($clear && $clear != "") {
+if (ISSET($clear) && $clear != "") {
   $msg = "Journal set to clear\n<br>\n";
 }
 
@@ -45,7 +45,7 @@ titlebox("Journal", $msg);
 <center>
 
 <?php
-if ($tid && $tid>0) {
+if (ISSET($tid) && $tid>0) {
   $who = get_coord_name ($tid);
 
   echo <<<EOF
@@ -57,9 +57,9 @@ of $who[planetname] ($who[x]:$who[y]:$who[z])</th></tr>
 <tr>
   <td width=15%>&nbsp;</td>
   <td align=center border=0 width=35%>
-    <a href="$PHP_SELF">Overview</a></td>
+    <a href="$_SERVER[PHP_SELF]">Overview</a></td>
   <td align=center order=0 width=35%>
-     <a href="$PHP_SELF?hide=$tid">Clear</a></td>
+     <a href="$_SERVER[PHP_SELF]?hide=$tid">Clear</a></td>
   <td align=center border=0 width=15%>
      <a href="/galaxy.php?submit=1&x=$who[x]&y=$who[y]">
 $who[x]:$who[y]</a></td></tr>
@@ -69,10 +69,10 @@ EOF;
   $q = "SELECT type,tick,date,data FROM journal WHERE planet_id='$Planetid' ".
        "AND target_id='$tid' AND hidden=0";
 
-  $result = mysql_query ($q, $db);
+  $result = mysqli_query ($db, $q );
 
-  if ($result && mysql_num_rows($result) > 0) {
-    while ($row = mysql_fetch_row($result)) {
+  if ($result && mysqli_num_rows($result) > 0) {
+    while ($row = mysqli_fetch_row($result)) {
       echo "<br>\n$row[3]\n";
     }
   } else {
@@ -86,17 +86,17 @@ EOF;
 <table  width="650" border="1" cellpadding="2" >
 <tr><th class="a" colspan="5">Private Journal Overview</th></tr>
 <tr><td align=center colspan="5">
-<a href="$PHP_SELF?clear=1">Clear all entries</a></td></tr>
+<a href="$_SERVER[PHP_SELF]?clear=1">Clear all entries</a></td></tr>
 <tr><td style="visibility:hidden;border:0px"></td></tr>
 EOF;
-  echo "<tr><th class=\"a\" width=60><a href=\"$PHP_SELF?coords=";
-  if ($coords && $coords==1) echo "2";
+  echo "<tr><th class=\"a\" width=60><a href=\"$_SERVER[PHP_SELF]?coords=";
+  if (ISSET($coords) && $coords==1) echo "2";
   else echo "1";
   echo "\">Coords</a></th>\n<th class=\"a\">Target</th>\n".
        "<th class=\"a\" width=50>Count</th>\n".
        "<th class=\"a\" width=60>Type</th>".
-       "<th class=\"a\" width=100><a href=\"$PHP_SELF?date=";
-  if ($date && $date==1) echo "2";
+       "<th class=\"a\" width=100><a href=\"$_SERVER[PHP_SELF]?date=";
+  if (ISSET($date) && $date==1) echo "2";
   else echo "1";
   echo "\">Last</a></th>\n";
 
@@ -105,11 +105,11 @@ EOF;
      "FROM journal WHERE planet_id='$Planetid' ".
      "AND hidden=0 GROUP BY target_id";
 
-  if ($date) {
+  if (ISSET($date)) {
     $q .= " ORDER BY d ";
     if ($date==1) $q .= "DESC";
     else $q .= "ASC";
-  } else if ($coords) {
+  } else if (ISSET($coords)) {
     $q = "SELECT target_id, count(*), sum(type), ".
        "date_format(max(journal.date),'%D %b %H:%i'), ".
        "max(journal.date) as d ".
@@ -120,17 +120,17 @@ EOF;
      else $q .= "x DESC, y DESC, z DESC";
   }
 
-  $result = mysql_query ($q, $db);
+  $result = mysqli_query ($db, $q );
 
-  if ($result && mysql_num_rows($result) > 0) {
-    while ($row = mysql_fetch_row($result)) {
+  if ($result && mysqli_num_rows($result) > 0) {
+    while ($row = mysqli_fetch_row($result)) {
 
       $who = get_coord_name ($row[0]);
 
       echo "<tr><td align=center>".
         "<a href=\"galaxy.php?submit=1&x=$who[x]&y=$who[y]\">".
         "$who[x]:$who[y]:$who[z]</a></td>".
-        "<td><a href=\"$PHP_SELF?tid=$row[0]\">".
+        "<td><a href=\"$_SERVER[PHP_SELF]?tid=$row[0]\">".
         "$who[leader] of $who[planetname]</a></td>".
         "<td align=center>$row[1]</td>";
 

@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,13 +19,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-// require "planet_util.php";
+// require "planet_util.inc";
 // require "fleet_util.php";
 
 function set_has_news ($id) {
   global $db, $myrow, $Planetid;
 
-  mysql_query ("UPDATE LOW_PRIORITY planet SET has_news=1 WHERE id='$id'", $db);
+  mysqli_query ("UPDATE LOW_PRIORITY planet SET has_news=1 WHERE id='$id'", $db);
   if ($id == $Planetid) $myrow["has_news"] = 1;
 }
 
@@ -37,7 +37,7 @@ function insert_into_news ($id, $type, &$text) {
 
   // echo "insert_news ($id:$type): [$q]<br>";
 
-  if (mysql_query ($q, $db)) set_has_news ($id);
+  if (mysqli_query ($q, $db)) set_has_news ($id);
 }
 
 function send_donation_news ($id, $m=0, $c=0, $e=0) {
@@ -85,8 +85,8 @@ function send_msg_fleet_recall ($target_id, $eta, $order) {
 function send_msg_fleet_move ($target_id, $eta, $order, $flnum, $name="ship") {
   global $db, $Planetid, $myrow;
 
-  $result = mysql_query("SELECT fleet_id FROM fleet WHERE planet_id='$Planetid' and num='$flnum'", $db);
-  $row = mysql_fetch_row ($result);
+  $result = mysqli_query("SELECT fleet_id FROM fleet WHERE planet_id='$Planetid' and num='$flnum'", $db);
+  $row = mysqli_fetch_row ($result);
   $num = (int) fetch_fleet_sum ($row[0]);
   $tc = get_coord_name ($target_id);
 

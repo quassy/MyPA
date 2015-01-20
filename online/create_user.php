@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,11 +39,11 @@ function create_user ($pid) {
   $q = "INSERT INTO rc (planet_id, rc_id, status) ".
      "SELECT '$pid', id, NOT rc_id FROM rc_class";
 
-  $result = mysql_query ($q, $db);
+  $result = mysqli_query ($db, $q );
   if (!$result) echo "Error in Create_user $pid Research";
 
   $q = "UPDATE rc SET status=3 WHERE planet_id='$pid' AND rc_id=0 ";
-  $result = mysql_query ($q, $db);
+  $result = mysqli_query ($db, $q );
   if (!$result) echo "Error in Create_user $pid Research (0)";
 
   
@@ -54,7 +54,7 @@ function create_user ($pid) {
   for ($i=0; $i<=$number_of_fleets; $i++) {
     $q = "INSERT INTO fleet set planet_id='$pid',num='$i'";
 
-    $result = mysql_query ($q, $db);
+    $result = mysqli_query ($db, $q );
     if (!$result) echo "Error in Create_user $pid Fleets";
   }
 
@@ -67,7 +67,7 @@ function create_user ($pid) {
      "planet_c='$start_resource[planet_c]',planet_e='$start_resource[planet_e]' ".
      "WHERE id='$pid'";
 
-  $result = mysql_query ($q, $db);
+  $result = mysqli_query ($db, $q );
   if (!$result) echo "Error in Create_user $pid Initial resources";
 
   /*
@@ -75,7 +75,7 @@ function create_user ($pid) {
    */
   $q = "INSERT INTO scan (planet_id,wave_id,num) ".
      "SELECT '$pid',id,0 FROM scan_class AS sc WHERE rc_id=0";
-  $result = mysql_query ($q, $db);
+  $result = mysqli_query ($db, $q );
   if (!$result) echo "Error in Create_user $pid Initial scans";
 
   

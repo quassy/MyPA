@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,13 +26,13 @@ function pval ($val) {
 function get_online() {
   global $db;
 
-  $result = mysql_query("SELECT COUNT(*) from planet",$db);
-  $row = mysql_fetch_row($result);
+  $result = mysqli_query($db, "SELECT COUNT(*) from planet");
+  $row = mysqli_fetch_row($result);
   $total = $row[0];
 
-  $result = mysql_query("SELECT COUNT(*) ".
-                        "FROM planet WHERE mode=2 or mode=0xF2",$db);
-  $row = mysql_fetch_row($result);
+  $result = mysqli_query($db, "SELECT COUNT(*) ".
+                        "FROM planet WHERE mode=2 or mode=0xF2");
+  $row = mysqli_fetch_row($result);
   $numonline = $row[0];
 
   if ($numonline == 1) {
@@ -110,7 +110,7 @@ function top_header($myrow) {
     "<b>Score</b>: ".
     pval($myrow["score"])."</span></td>\n";
   echo "<td colspan=2 align=right width=\"40%\"><span class=\"medium\">".
-    $myrow[leader]." of ".
+    $myrow["leader"]." of ".
     $myrow["planetname"]."</span></td></tr>\n";
   
   echo "<tr><td align=left><span class=\"tiny\">Date: $gdate</span></td>\n".

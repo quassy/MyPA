@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,13 +19,14 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-require "popup_header.php";
+require "popup_header.inc";
 require "standard.php";
 include_once "alliance_func.inc";
 
 /* top table is written now */
 top_header($myrow);
 
+if (!ISSET($msg)) $msg = "";
 titlebox("Alliance listing", $msg);
 
 echo "<center>\n";

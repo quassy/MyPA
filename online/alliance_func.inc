@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,12 +22,12 @@
 function get_alliance () {
   global $db, $myrow;
 
-  if ($myrow[alliance_id] == 0) return 0;
+  if ($myrow["alliance_id"] == 0) return 0;
 
   $q = "SELECT * FROM alliance WHERE id='$myrow[alliance_id]'";
-  $res = mysql_query( $q, $db);
+  $res = mysqli_query($db,  $q );
   if ($res)
-    $all = mysql_fetch_array($res);
+    $all = mysqli_fetch_array($res);
   else
     return 0;
   $all["status"] = !($myrow["status"] & 2);
@@ -41,9 +41,9 @@ function print_alliance_status ($all) {
   if (!$all) return;
 
   $q = "SELECT * FROM planet WHERE id='$all[hc]'";
-  $res = mysql_query( $q, $db);
+  $res = mysqli_query($db,  $q );
   if ($res)
-    $hc = mysql_fetch_array($res);
+    $hc = mysqli_fetch_array($res);
   else {
     echo "HC missing in DB!";
     return;
@@ -77,7 +77,7 @@ EOF;
       "<td>&nbsp;$all[secret]</td></tr>\n";
   } 
   if ($all["hc"] != $myrow["id"]) {
-    echo "<form method=\"post\" action=\"$PHP_SELF\">".
+    echo "<form method=\"post\" action=\"$_SERVER[PHP_SELF]\">".
       "<tr><td align=\"center\" colspan=\"2\" valign=\"center\">".
       "<input type=submit value=\"  Quit alliance  \" name=\"oquit\">".
       "</td></tr></form>\n";
@@ -93,9 +93,9 @@ function delete_alliance () {
   }
   
   $myrow["alliance_id"] = 0;
-  mysql_query("UPDATE planet SET alliance_id=0,status=status&0xFD ".
-              "WHERE alliance_id='$all[id]'", $db);
-  mysql_query("DELETE FROM alliance WHERE id='$all[id]'", $db);
+  mysqli_query($db, "UPDATE planet SET alliance_id=0,status=status&0xFD ".
+              "WHERE alliance_id='$all[id]'" );
+  mysqli_query($db, "DELETE FROM alliance WHERE id='$all[id]'" );
 
   $msg = "Alliance '[$all[tag]] $all[name]' deleted.";
   $all = 0;
@@ -108,9 +108,9 @@ function list_alliances() {
 
   $q = "SELECT tag,name,hcname,members ".
        "FROM alliance WHERE members>2 OR tag='ADM' ORDER BY members DESC";
-  $res = mysql_query( $q, $db);
+  $res = mysqli_query($db,  $q );
 
-  if (!$res || mysql_num_rows($res)==0) {
+  if (!$res || mysqli_num_rows($res)==0) {
     echo "No alliances found.<br>";
     return;
   }
@@ -120,7 +120,7 @@ function list_alliances() {
    "<tr><th width=\"60\">Tag</th><th width=\"60\">Members</th>".
    "<th>Name</th><th width=\"80\">HC Name</th></tr>\n";
 
-  while ($row=mysql_fetch_row($res)) {
+  while ($row=mysqli_fetch_row($res)) {
     echo "<tr><td align=\"center\">[$row[0]]</td>".
       "<td align=\"center\">$row[3]</td><td>$row[1]</td>".
       "<td><a href=\"javascript:popupWindow('HC_Alliance',".
@@ -133,9 +133,9 @@ function list_alliances_admin($ref) {
   global $db, $myrow;
 
   $q = "SELECT tag,name,hcname,members,id FROM alliance ORDER BY members DESC";
-  $res = mysql_query( $q, $db);
+  $res = mysqli_query($db,  $q );
 
-  if (!$res || mysql_num_rows($res)==0) {
+  if (!$res || mysqli_num_rows($res)==0) {
     echo "No alliances found.<br>";
     return;
   }
@@ -146,9 +146,9 @@ function list_alliances_admin($ref) {
    "<th width=\"30\">Id</th>".
    "<th>Name</th><th width=\"80\">HC Name</th></tr>\n";
   
-  while ($row=mysql_fetch_row($res)) {
-    $r_ctl = mysql_query("SELECT COUNT(*) FROM planet WHERE alliance_id=$row[4]", $db);
-    $r_row = mysql_fetch_row($r_ctl);
+  while ($row=mysqli_fetch_row($res)) {
+    $r_ctl = mysqli_query($db, "SELECT COUNT(*) FROM planet WHERE alliance_id=$row[4]" );
+    $r_row = mysqli_fetch_row($r_ctl);
 
     echo "<tr><td align=\"center\">[<a href=\"$ref$row[4]\">$row[0]</a>]</td>".
       "<td align=\"center\">$row[3] ($r_row[0])</td><td>$row[4]</td><td>$row[1]</td>".
@@ -164,7 +164,7 @@ function untrusted_msg() {
 }
 
 function list_alliance_members ($all) {
-  global $db, $myrow, $PHP_SELF;
+  global $db, $myrow;
 
   if (!$all["status"]) {
     untrusted_msg();
@@ -173,9 +173,9 @@ function list_alliance_members ($all) {
 
   $q = "SELECT leader,planetname,x,y,z,id,score,status,mode,has_hostile ".
        "FROM planet WHERE alliance_id='$all[id]' ORDER BY x,y,z";
-  $res = mysql_query( $q, $db);
+  $res = mysqli_query($db,  $q );
 
-  if (!$res || mysql_num_rows($res)==0) {
+  if (!$res || mysqli_num_rows($res)==0) {
     echo "No alliance members for $all[tag] found.";
     return;
   }
@@ -184,7 +184,7 @@ function list_alliance_members ($all) {
    "<tr><th colspan=\"3\" class=\"a\">Member listing [$all[tag]]</th></tr>\n".
    "<tr><th width=\"100\">Coords</th><th>Name</th><th>Score</th></tr>\n";
   
-  while ($row=mysql_fetch_row($res)) {
+  while ($row=mysqli_fetch_row($res)) {
     if (($row[8]&0xF) == 2) $online = "&nbsp;*&nbsp;";
     else $online = "";
     echo "<tr><td align=\"center\">(" . 
@@ -206,11 +206,11 @@ function list_alliance_members ($all) {
         && $row[5] != $myrow["id"]) {
 
       if ($myrow["id"] == $all["hc"]) {
-        echo "&nbsp;<a href=\"$PHP_SELF?okick=$row[5]\">[kick]</a>";
+        echo "&nbsp;<a href=\"$_SERVER[PHP_SELF]?okick=$row[5]\">[kick]</a>";
       }
 
       if ($row[7] & 2) {
-         echo "&nbsp;<a href=\"$PHP_SELF?otrust=$row[5]\">[trust]</a>";
+         echo "&nbsp;<a href=\"$_SERVER[PHP_SELF]?otrust=$row[5]\">[trust]</a>";
       }
     }
 
@@ -230,15 +230,15 @@ function leave_alliance () {
           "left your alliance.";
   insert_into_news ($all["hc"], 11, $text);
 
-  mysql_query( "UPDATE planet SET alliance_id=0,status=status&0xFD ".
-               "WHERE id='$Planetid'", $db);
+  mysqli_query($db,  "UPDATE planet SET alliance_id=0,status=status&0xFD ".
+               "WHERE id='$Planetid'" );
   // affected rows abfragen
   if ( $Planetid == $all["offa"]) { 
-    mysql_query( "UPDATE alliance SET members=members-1, offa=NULL ".
-               "WHERE id='$myrow[alliance_id]'", $db);
+    mysqli_query($db,  "UPDATE alliance SET members=members-1, offa=NULL ".
+               "WHERE id='$myrow[alliance_id]'" );
   } else {
-    mysql_query( "UPDATE alliance SET members=members-1 ".
-               "WHERE id='$myrow[alliance_id]'", $db);
+    mysqli_query($db,  "UPDATE alliance SET members=members-1 ".
+               "WHERE id='$myrow[alliance_id]'" );
   }
   $myrow["alliance_id"] = 0;
   $all = 0;
@@ -255,11 +255,11 @@ function kick_alliance ($kid) {
   if (!$all || $all["hc"] != $Planetid)
     return "You are not allowed to do this.";
 
-  mysql_query( "UPDATE planet SET alliance_id=0,status=status&0xFD ".
-               "WHERE id='$kid' AND alliance_id='$myrow[alliance_id]'", $db);
+  mysqli_query($db,  "UPDATE planet SET alliance_id=0,status=status&0xFD ".
+               "WHERE id='$kid' AND alliance_id='$myrow[alliance_id]'" );
   // affected rows abfragen
-  mysql_query( "UPDATE alliance SET members=members-1 ".
-               "WHERE id='$myrow[alliance_id]'", $db);
+  mysqli_query($db,  "UPDATE alliance SET members=members-1 ".
+               "WHERE id='$myrow[alliance_id]'" );
   $all["members"] -= 1;
   $text = "You are no longer member of [$all[tag]].";
   insert_into_news ($kid, 11, $text);
@@ -273,15 +273,15 @@ function join_alliance ($sec) {
   }
 
   $q = "SELECT id FROM alliance WHERE secret='$sec'";
-  $res = mysql_query( $q, $db);
-  if (!$res || mysql_num_rows($res)==0) {
+  $res = mysqli_query($db,  $q );
+  if (!$res || mysqli_num_rows($res)==0) {
     return "No such alliance!.";
   }
-  $row=mysql_fetch_row($res);
+  $row=mysqli_fetch_row($res);
 
-  mysql_query( "UPDATE planet SET alliance_id='$row[0]',status=status|2 ".
-               "WHERE id='$myrow[id]'", $db);
-  mysql_query( "UPDATE alliance SET members=members+1 WHERE id='$row[0]'", $db);
+  mysqli_query($db,  "UPDATE planet SET alliance_id='$row[0]',status=status|2 ".
+               "WHERE id='$myrow[id]'" );
+  mysqli_query($db,  "UPDATE alliance SET members=members+1 WHERE id='$row[0]'" );
 
   $myrow["alliance_id"] = $row[0];
   $myrow["status"] = $myrow["status"] | 2;
@@ -297,13 +297,13 @@ function join_alliance ($sec) {
 }
 
 function off_menu () {
-  global $PHP_SELF, $Planetid, $all;
+  global $Planetid, $all;
 
   if (!$all || $all["offa"] != $Planetid) return;
 
     echo <<<EOF
 <br>
-<form method="post" action="$PHP_SELF">
+<form method="post" action="$_SERVER[PHP_SELF]">
 <table border="1" width="650" cellpadding="2">
   <tr><th colspan="2" class="a">Officer options</th></tr>
   <tr>
@@ -327,8 +327,8 @@ function elect_offa($offa_id) {
   if ($all["offa"] == $offa_id) return;
 
   if ($all["offa"] > 0) {
-    mysql_query ("UPDATE alliance SET offa=0 ".
-       "WHERE id=$all[id]", $db);
+    mysqli_query ($db, "UPDATE alliance SET offa=0 ".
+       "WHERE id=$all[id]" );
     $msg = "You are not longer Officer in the alliance [$all[tag]].";
     insert_into_news ($all["offa"], 11, $msg);
     $all["offa"] = 0;
@@ -337,13 +337,13 @@ function elect_offa($offa_id) {
 
   $q = "SELECT x, y, z, leader, planetname FROM planet ".
        "WHERE id=$offa_id AND alliance_id=$all[id] AND status&2 = 0";
-  $res = mysql_query ($q, $db);
+  $res = mysqli_query ($db, $q );
 
-  if ($res && mysql_num_rows($res)) {
-    $row = mysql_fetch_row($res);
+  if ($res && mysqli_num_rows($res)) {
+    $row = mysqli_fetch_row($res);
 
-    mysql_query ("UPDATE alliance SET offa='$offa_id' ".
-       "WHERE id=$all[id]", $db);
+    mysqli_query ($db, "UPDATE alliance SET offa='$offa_id' ".
+       "WHERE id=$all[id]" );
     $all["offa"] = $offa_id;
 
     $msg = "You are now Officer in the alliance [$all[tag]].";
@@ -362,12 +362,12 @@ function select_offa () {
   $select = "";
   $q = "SELECT x, y, z, leader, planetname, id FROM planet ".
        "WHERE alliance_id=$all[id] AND status&2 = 0";
-  $res = mysql_query ($q, $db);
+  $res = mysqli_query ($db, $q );
 
-  if ($res && mysql_num_rows($res)) {
+  if ($res && mysqli_num_rows($res)) {
     $select = "<select name=\"offa\">\n";
 
-    while ($row = mysql_fetch_row($res)) {
+    while ($row = mysqli_fetch_row($res)) {
 
       if ($row[5] != $Planetid) {
 
@@ -391,14 +391,14 @@ function select_offa () {
 }
 
 function hc_menu () {
-  global $PHP_SELF, $Planetid, $all;
+  global $Planetid, $all;
 
   if (!$all || $all["hc"] != $Planetid) return;
 
   $selection = select_offa();
   echo <<<EOF
 <br>
-<form method="post" action="$PHP_SELF">
+<form method="post" action="$_SERVER[PHP_SELF]">
 <table border="1" width="650" cellpadding="2">
   <tr><th colspan="3" class="a">HC options</th></tr>
   <tr>
@@ -426,10 +426,9 @@ EOF;
 }
 
 function join_menu () {
-  global $PHP_SELF;
 
   echo <<<EOF
-<form method="post" action="$PHP_SELF">
+<form method="post" action="$_SERVER[PHP_SELF]">
 <table border="1" width="650">
 <tr><th colspan="5" class="a">Join an existing alliance</th></tr>
 <tr>
@@ -445,10 +444,9 @@ EOF;
 }
 
 function create_menu () {
-  global $PHP_SELF;
 
   echo <<<EOF
-<form method="post" action="$PHP_SELF">
+<form method="post" action="$_SERVER[PHP_SELF]">
 <table border="1" width="650">
 <tr><th colspan="3" class="a">Create a new alliance</th></tr>
 <tr><th width="100">HC public name</th>
@@ -510,20 +508,20 @@ function create_alliance ($nhc, $ntag, $nname) {
     // check if tag/name is new
     $q = "SELECT id FROM alliance ".
       "WHERE hcname='$nhc' OR name='$nname' OR tag='$ntag'";
-    $res = mysql_query ($q, $db);
+    $res = mysqli_query ($db, $q );
 
-    if ($res && mysql_num_rows($res)==0) {
+    if ($res && mysqli_num_rows($res)==0) {
       // create alliance
       $pw_tmp = md5 (uniqid (rand()));
       $pw = substr($pw_tmp, 0, 8);
 
       $q = "INSERT INTO alliance SET tag='$ntag', hcname='$nhc', ".
         "members=1, name='$nname', secret='$pw', hc=$myrow[id]";
-      $res = mysql_query ($q, $db);
-      $alid = mysql_insert_id ($db);
+      $res = mysqli_query ($db, $q );
+      $alid = mysqli_insert_id ($db);
 
-      mysql_query("UPDATE planet set alliance_id='$alid' ".
-                  "WHERE id='$Planetid'",$db);
+      mysqli_query($db, "UPDATE planet set alliance_id='$alid' ".
+                  "WHERE id='$Planetid'");
 
       $myrow["alliance_id"] = $alid;
 
@@ -555,8 +553,8 @@ function change_secret () {
   $pw_tmp = md5 (uniqid (rand()));
   $pw = substr($pw_tmp, 0, 8);
 
-  mysql_query ("UPDATE alliance SET secret='$pw' ".
-       "WHERE id='$myrow[alliance_id]'", $db);
+  mysqli_query ($db, "UPDATE alliance SET secret='$pw' ".
+       "WHERE id='$myrow[alliance_id]'" );
   $msg = "Alliance secret updated.";
   $all["secret"] = $pw;
 
@@ -569,15 +567,15 @@ function trust_member ($mid) {
   if (!$all || ($all["hc"] != $Planetid && $all["offa"] != $Planetid))
     return "You arent allowed to do this";
 
-  mysql_query ("UPDATE planet SET status=status&0xFD ".
-               "WHERE alliance_id='$myrow[alliance_id]' AND id='$mid' ", $db);
-  $n = mysql_affected_rows ($db);
+  mysqli_query ($db, "UPDATE planet SET status=status&0xFD ".
+               "WHERE alliance_id='$myrow[alliance_id]' AND id='$mid' " );
+  $n = mysqli_affected_rows ($db);
 
-  $res = mysql_query("SELECT leader,planetname FROM planet ".
-                     "WHERE id='$mid' ", $db);
-  if (!$res || mysql_num_rows($res) == 0)
+  $res = mysqli_query($db, "SELECT leader,planetname FROM planet ".
+                     "WHERE id='$mid' " );
+  if (!$res || mysqli_num_rows($res) == 0)
     return "No such planet!";
-  $row = mysql_fetch_row($res);
+  $row = mysqli_fetch_row($res);
 
   if ($n == 1) {
     $msg = "$row[0] of $row[1] now is trusted member of [$all[tag]].";

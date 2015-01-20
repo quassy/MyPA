@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,8 @@
  */
 
 require_once "../auth_check.php";
-
 require_once "../options.php";
+
 pre_auth($Username,$Password,$Planetid,$Valid);
 
 require_once "../dblogon.php";
@@ -35,14 +35,14 @@ if ($Planetid>2) {
 
 require_once "../header.php";
 
-if ($extra_header) {
+if (ISSET($extra_header)) {
   my_header($extra_header,0,0);
 } else {
   my_header("",0,0);
 }
 
-mysql_query("UPDATE user set last=NOW(),last_tick='$mytick',".
-            "ip='$HTTP_SERVER_VARS[REMOTE_ADDR]' ".
-            "WHERE planet_id='$Planetid'"); 
+mysqli_query($db, "UPDATE user set last=NOW(),last_tick='$mytick'".
+	     "ip='$_SERVER[REMOTE_ADDR]' ".
+	     "WHERE planet_id='$Planetid'"); 
 
 ?>

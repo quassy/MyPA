@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,26 +34,26 @@ function sector_scan ($tid) {
      "GROUP BY rc_class.type";
 
   $pds = 0;
-  $res = mysql_query ($qp, $db);
-  if ( $res && mysql_num_rows($res) > 0) {
-    $row = mysql_fetch_row($res);
+  $res = mysqli_query ($db, $qp );
+  if ( $res && mysqli_num_rows($res) > 0) {
+    $row = mysqli_fetch_row($res);
     if (!$row || !$row[0]) $pds=0;
     else $pds = $row[0];
   }
 
   $units = 0;
-  $res = mysql_query ($qf, $db);
-  if ( $res && mysql_num_rows($res) > 0) {
-    $row = mysql_fetch_row($res);
+  $res = mysqli_query ($db, $qf );
+  if ( $res && mysqli_num_rows($res) > 0) {
+    $row = mysqli_fetch_row($res);
     if (!$row || !$row[0]) $units=0;
     else $units = $row[0];
   }
 
   $research=0;
   $construction=0;
-  $res = mysql_query ($qr, $db);
-  if ( $res && mysql_num_rows($res) > 0) {
-    while (($row = mysql_fetch_row($res))) {
+  $res = mysqli_query ($db, $qr );
+  if ( $res && mysqli_num_rows($res) > 0) {
+    while (($row = mysqli_fetch_row($res))) {
       if ($row) {
         if($row[1]==1) $construction=$row[0];
         if($row[1]==0) $research=$row[0];
@@ -61,9 +61,9 @@ function sector_scan ($tid) {
     }
   }
 
-  $res = mysql_query ($q, $db);
-  if ( $res && mysql_num_rows($res) > 0) {
-    $row = mysql_fetch_array($res);
+  $res = mysqli_query ($db, $q );
+  if ( $res && mysqli_num_rows($res) > 0) {
+    $row = mysqli_fetch_array($res);
     
     // get date 
     $gdate = date("d/m/y H:i:s");
@@ -73,7 +73,7 @@ function sector_scan ($tid) {
       "Sector Scan Report on ".
       "$row[planetname] ($row[x]:$row[y]:$row[z]) $gdate";
 
-    switch ($row[mode] & 0x0F) {
+    switch ($row["mode"] & 0x0F) {
     case 0: $data .= " (banned)"; break;
     case 1: $data .= " (offline)"; break;
     case 2: $data .= " (online)"; break;
@@ -142,7 +142,7 @@ function unit_scan ($tid) {
      "AND fleet.fleet_id = units.id AND units.unit_id = uc.id ".
      "GROUP BY units.unit_id";
 
-  $result = mysql_query ($q, $db);
+  $result = mysqli_query ($db, $q );
 
   $gdate = date("d/m/y H:i:s");
 
@@ -150,10 +150,10 @@ function unit_scan ($tid) {
     "<tr><th colspan=\"5\">Unit Scan Report on $target[planetname] ".
     "($target[x]:$target[y]:$target[z]) $gdate&nbsp;</th></tr>\n";
 
-  if ($result && mysql_num_rows($result) > 0) {
+  if ($result && mysqli_num_rows($result) > 0) {
 
     $row_counter = 0;
-    while ($row = mysql_fetch_row ($result)) {
+    while ($row = mysqli_fetch_row ($result)) {
 
       if ( ($row_counter % 2) == 0)  $data .= "<tr>";
       $data .= "<td class=scl>$row[0]</td><td class=scr> $row[1]</td>";
@@ -180,7 +180,7 @@ function pds_scan ($tid) {
   $q = "SELECT unit_class.name, pds.num FROM pds,unit_class ".
      "WHERE planet_id='$tid' AND pds.pds_id=unit_class.id";
 
-  $result = mysql_query ($q, $db);
+  $result = mysqli_query ($db, $q );
 
   $gdate = date("d/m/y H:i:s");
 
@@ -188,10 +188,10 @@ function pds_scan ($tid) {
     "<tr><th colspan=5>PDS Scan Report on $target[planetname] ".
     "($target[x]:$target[y]:$target[z]) $gdate</th></tr>\n";
   
-  if ($result && mysql_num_rows($result) > 0) {
+  if ($result && mysqli_num_rows($result) > 0) {
 
     $row_counter = 0;
-    while ($row = mysql_fetch_row ($result)) {
+    while ($row = mysqli_fetch_row ($result)) {
 
       if ( ($row_counter % 2) == 0) $data .= "<tr>";
       $data .= "<td class=scl>$row[0]</td><td class=scr> $row[1]</td>";
@@ -223,7 +223,7 @@ function news_scan ($tid) {
     $q .= " LIMIT 20";
   }
 
-  $result = mysql_query ($q, $db);
+  $result = mysqli_query ($db, $q );
 
   $gdate = date("d/m/y H:i:s");
   
@@ -231,12 +231,12 @@ function news_scan ($tid) {
     "<th colspan=\"2\">News Scan Report on $target[planetname] ".
     "($target[x]:$target[y]:$target[z]) $gdate</th></tr>\n";
 
-  if ($result && mysql_num_rows($result) > 0) {
+  if ($result && mysqli_num_rows($result) > 0) {
 
     $data .= "<tr><td class=screc>Received</td>".
       "<td class=scmsg>Message</td></tr>";
     
-    while ($row = mysql_fetch_row($result)) {
+    while ($row = mysqli_fetch_row($result)) {
       $tick="";
       if ($row[1] != 0) $tick = "<br>MyT: $row[1]";
       $data .= "<tr><td class=screc>$row[0]$tick</td>".
@@ -260,9 +260,9 @@ function mil_scan ($tid) {
 
   // query shipnames
   $q = "SELECT id, name FROM unit_class WHERE class !=5 ORDER BY id";
-  $res_ship = mysql_query ($q, $db);
+  $res_ship = mysqli_query ($db, $q );
 
-  while ($row = mysql_fetch_row($res_ship)) {
+  while ($row = mysqli_fetch_row($res_ship)) {
     $ship_list[$row[0]]["name"] = $row[1];
     for ($i=0; $i<$number_of_fleets+1; $i++) {
       $ship_list[$row[0]]["$i"] = 0;
@@ -273,10 +273,10 @@ function mil_scan ($tid) {
   $q = "SELECT units.unit_id, fleet.num, SUM(units.num) AS total ".
      "FROM fleet, units WHERE fleet.planet_id='$tid' ".
      "AND fleet.fleet_id=units.id GROUP BY units.unit_id,fleet.num";
-  $res_units = mysql_query ($q, $db);
+  $res_units = mysqli_query ($db, $q );
 
-  if ($res_units && mysql_num_rows($res_units) > 0) {
-    while ($row = mysql_fetch_row($res_units)) {
+  if ($res_units && mysqli_num_rows($res_units) > 0) {
+    while ($row = mysqli_fetch_row($res_units)) {
       $ship_list[$row[0]]["$row[1]"] = $row[2];
     }
   }
@@ -311,11 +311,11 @@ function mil_scan ($tid) {
   // query fleet status
   $q = "SELECT num, type, ticks, target_id FROM fleet ".
      "WHERE planet_id='$tid' ORDER BY num";
-  $res_fleet = mysql_query ($q, $db);
+  $res_fleet = mysqli_query ($db, $q );
 
-  if ($res_fleet && mysql_num_rows($res_fleet) > 0) {
+  if ($res_fleet && mysqli_num_rows($res_fleet) > 0) {
     $data .= "<tr><td>&nbsp;</td>";
-    while ($row = mysql_fetch_row($res_fleet)) {
+    while ($row = mysqli_fetch_row($res_fleet)) {
       if ($row[1]) {
 	$rid = get_coord ($row[3]);
 	if ($row[1]>9)
@@ -369,20 +369,20 @@ function scan_target ($sid, $x, $y, $z, $num) {
   $q = "SELECT scan.num,(planet.metalroids+planet.crystalroids+planet.eoniumroids+planet.uniniroids) ".
      "FROM scan,planet WHERE scan.wave_id=6 AND scan.planet_id='$target_id' ".
      "AND scan.planet_id = planet.id";
-  $result = mysql_query($q, $db);
+  $result = mysqli_query($db, $q );
 
-  if ($result && mysql_num_rows($result) == 1) {
-    $row = mysql_fetch_row($result);
+  if ($result && mysqli_num_rows($result) == 1) {
+    $row = mysqli_fetch_row($result);
     $blocks = $row[0];
     $target_roids = $row[1];
   }
 
   $q = "SELECT num,wave_id FROM scan ".
      "WHERE (wave_id=1 OR wave_id='$sid') AND planet_id='$Planetid'";
-  $result = mysql_query($q, $db);
+  $result = mysqli_query($db, $q );
 
-  if ($result && mysql_num_rows($result)>0) {
-    while ($row = mysql_fetch_row($result)) {
+  if ($result && mysqli_num_rows($result)>0) {
+    while ($row = mysqli_fetch_row($result)) {
       if ($row[1] == 1) {
 	$amps =$row[0]; 
       } else {
@@ -428,7 +428,7 @@ function scan_target ($sid, $x, $y, $z, $num) {
     $used_scans = $scans - $num;
     $q = "UPDATE scan SET num=num-'$used_scans' WHERE planet_id='$Planetid' ".
        "AND wave_id='$sid'";
-    mysql_query($q, $db);
+    mysqli_query($db, $q );
     
     switch ($sid) {
       case 2: $sname="sector scan"; break;
@@ -455,16 +455,16 @@ function scan_target ($sid, $x, $y, $z, $num) {
 	break;
       case 8: $data = mil_scan ($target_id); break;
       }
-      if ($data && data != "") {
+      if (ISSET($data) && $data != "") {
         if ($sid != 7) {
 	  $qset = " journal SET planet_id='$Planetid',target_id='$target_id',".
             "date=NOW(),tick='$mytick',type='$sid',data='$data'"; // ,hidden=1
 
-          $res = mysql_query("UPDATE $qset WHERE planet_id='$Planetid' ".
-            "AND target_id='$target_id' AND type='$sid'", $db);
+          $res = mysqli_query($db, "UPDATE $qset WHERE planet_id='$Planetid' ".
+            "AND target_id='$target_id' AND type='$sid'" );
 
-          if (!$res || mysql_affected_rows($db)!=1) {
-            $res = mysql_query("INSERT INTO $qset,hidden=1", $db);
+          if (!$res || mysqli_affected_rows($db)!=1) {
+            $res = mysqli_query($db, "INSERT INTO $qset,hidden=1" );
           }
         } 
         echo "<div class=cent>$data</div>";
@@ -478,8 +478,8 @@ function scan_target ($sid, $x, $y, $z, $num) {
                    "$myrow[planetname] ($myrow[x]:$myrow[y]:$myrow[z])");
       insert_into_news ($target_id, 5, $text);
       if ($blocks) {
-	mysql_query("UPDATE scan SET num=num-1 ".
-                    "WHERE wave_id=6 AND planet_id='$target_id'",$db);
+	mysqli_query($db, "UPDATE scan SET num=num-1 ".
+                    "WHERE wave_id=6 AND planet_id='$target_id'");
       }
     }
     if ($noticed) {

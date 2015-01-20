@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,15 +30,15 @@ function expand_universe () {
   for ($i=1; $i<=$universe_size;$i++) {
     for ($j=1; $j<=$cluster_size;$j++) {
 
-       $result = mysql_query ("SELECT id FROM galaxy ".
-	"WHERE x='$i' AND y='$j'", $db);
+       $result = mysqli_query ($db, "SELECT id FROM galaxy ".
+	"WHERE x='$i' AND y='$j'" );
 
        if ($result) {
-	 if (mysql_num_rows($result) == 1) {
+	 if (mysqli_num_rows($result) == 1) {
 	   echo "gal $i:$j exist<br>";
 	 } else {
            echo "creating gal $i:$j<br>";
-           $result = mysql_query ("INSERT INTO galaxy set x='$i',y='$j'", $db);
+           $result = mysqli_query ($db, "INSERT INTO galaxy set x='$i',y='$j'" );
          }
        }
     }

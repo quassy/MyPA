@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
  */
 
 require "auth_check.php";
-require "options.php";
+include_once "options.php";
 include_once "get_ip.php";
 
 $player_ip=get_ip();
@@ -31,12 +31,12 @@ require "dblogon.php";
 
 db_auth($db,$Username,$Password,$Planetid);
 
-$result = mysql_query("SELECT tick FROM general"); 
-$row = mysql_fetch_row($result);
+$result = mysqli_query($db, "SELECT tick FROM general"); 
+$row = mysqli_fetch_row($result);
 $mytick = $row[0];
 
 require "header.php";
-if ($extra_header) {
+if (ISSET($extra_header)) {
   my_header($extra_header);
 } else {
   my_header();
@@ -44,12 +44,12 @@ if ($extra_header) {
 
 require "top.php";
 
-$result = mysql_query("SELECT * FROM planet WHERE id='$Planetid'",$db);
-$myrow = mysql_fetch_array($result);
+$result = mysqli_query($db, "SELECT * FROM planet WHERE id='$Planetid'");
+$myrow = mysqli_fetch_array($result);
 
-mysql_query("UPDATE user set last=NOW(),last_tick='$mytick',".
-	    "ip='$player_ip' ".
-            "WHERE planet_id='$Planetid'"); 
+mysqli_query($db, "UPDATE user set last=NOW(),last_tick='$mytick',".
+	     "ip='$player_ip' ".
+	     "WHERE planet_id='$Planetid'"); 
 
 require "msgbox.php";
 

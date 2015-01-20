@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,12 +44,12 @@ function print_fleet_id ($pid, $eta, $size, $type, $num=0)
 {  
   global $db, $Planetid;
 
-  $result = mysql_query ("SELECT planetname, x, y, z FROM planet WHERE id='$pid'", $db);
+  $result = mysqli_query ($db, "SELECT planetname, x, y, z FROM planet WHERE id='$pid'");
   if (!$result) {
     return "Error querying planet $id from DB<br>\n";
   }
 
-  $prow = mysql_fetch_row ($result);
+  $prow = mysqli_fetch_row ($result);
   if (!$prow) {
     return "Error fetching planet $id from DB<br>\n";
   }
@@ -123,13 +123,13 @@ function fetch_planet ($pid, &$f, &$h, $direction) {
 
   // echo "$q<br>\n";
 
-  $fres = mysql_query ( $q, $db);
-  if (!$fres || mysql_num_rows($fres) == 0) {
+  $fres = mysqli_query ($db,  $q );
+  if (!$fres || mysqli_num_rows($fres) == 0) {
     return "";
   }
 
   $target_fleet = "";
-  while ($frow = mysql_fetch_row($fres)) {
+  while ($frow = mysqli_fetch_row($fres)) {
 
     $num_ships = fetch_fleet_sum ( $frow[0] );
 
@@ -171,12 +171,12 @@ function print_total ($x, $y, $direction) {
    */
 
   $q = "SELECT id, z, planetname FROM planet WHERE x='$x' and y='$y' order by z";
-  $pres = mysql_query ( $q, $db);
+  $pres = mysqli_query ($db,  $q );
 
   if (!$pres)
     return;
 
-  while ($prow = mysql_fetch_array($pres) ) {
+  while ($prow = mysqli_fetch_array($pres) ) {
     $target_fleet = "";
 
     $hostile = 0;

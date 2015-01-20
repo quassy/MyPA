@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
  */
 
 require "standard.php";
-require "planet_util.php";
+require "planet_util.inc";
 require "news_util.php";
 include_once "alliance_func.inc";
 
@@ -28,10 +28,10 @@ $msg = "";
 
 $all = get_alliance ();
 
-if ($all && $otrust && $otrust!=0)
+if ($all && ISSET($otrust) && $otrust!=0)
   $msg .= trust_member($otrust);
 
-if ($all && $okick && $okick!=0 && $okick != $Planetid)
+if ($all && ISSET($okick) && $okick!=0 && $okick != $Planetid)
   $msg .= kick_alliance($okick);
 
 /* top table is written now */
@@ -47,14 +47,12 @@ if (!$all || $myrow["alliance_id"] == 0) {
        "<tr><td><span class=\"red\">You arent Member of an alliance</span>".
       "</td></tr></table>\n";
 
-
 } else {
 
   if ($all["status"])
     list_alliance_members($all);
   else
     untrusted_msg();
-
 }
 
 ?>

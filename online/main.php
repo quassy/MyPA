@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,11 +35,11 @@ if ( !$Username || $Username=="" ||
 
 require "dblogon.php";
 
-$result = mysql_query("SELECT login,settings FROM user ".
+$result = mysqli_query($db, "SELECT login,settings FROM user ".
                       "WHERE login='$Username' AND md5(password)='$Password' ".
-		      "AND planet_id='$Planetid'",$db);
+		      "AND planet_id='$Planetid'");
 
-if (!result || mysql_num_rows($result) != 1) {
+if (!$result || mysqli_num_rows($result) != 1) {
 
   setcookie("Username","");
   setcookie("Password","");

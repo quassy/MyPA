@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -96,9 +96,9 @@ function get_alliance_tag($aid) {
   if ($aid == 0)
     return "";
 
-  $res = mysql_query("SELECT tag FROM alliance WHERE id='$aid'",$db);
-  if ($res && mysql_num_rows($res)>0) {
-    $row = mysql_fetch_row($res);
+  $res = mysqli_query($db, "SELECT tag FROM alliance WHERE id='$aid'");
+  if ($res && mysqli_num_rows($res)>0) {
+    $row = mysqli_fetch_row($res);
     return "$row[0]";
   } else {
     return "";
@@ -114,10 +114,10 @@ function get_scan_data ($x, $y) {
        "AND scan.wave_id!=1 AND scan.wave_id!=3 AND ".
        "scan.wave_id!=6 AND scan.num>0";
 
-  $result = mysql_query ($q, $db);
+  $result = mysqli_query ($db, $q );
 
-  if ($result && mysql_num_rows($result) > 0) {
-    while ($row=mysql_fetch_row ($result)) {
+  if ($result && mysqli_num_rows($result) > 0) {
+    while ($row=mysqli_fetch_row ($result)) {
       if ($row[0] > 1 && $row[0] != 6 && $row[0] != 3 ) {
 	$n = $row[1][0];
         if ( $mysettings & 64 && ! $override_settings) {
@@ -138,16 +138,16 @@ function print_gal_report ($x, $y) {
 
   global $db, $Planetid, $myrow;
 
-  $result = mysql_query ("SELECT z, leader, planetname, score, ".
+  $result = mysqli_query ($db, "SELECT z, leader, planetname, score, ".
 			 "metalroids+crystalroids+eoniumroids+uniniroids ".
 			 "AS roids, planet.id, mode, planet.id=gc, alliance_id, ".
                          "planet.id=moc ".
 			 "FROM planet, galaxy ".
 			 "WHERE planet.x='$x' AND planet.y='$y' AND ".
 			 "planet.x=galaxy.x AND galaxy.y=planet.y ".
-			 "ORDER BY z ASC", $db);
+			 "ORDER BY z ASC" );
 
-  if (mysql_num_rows($result) == 0) {
+  if (mysqli_num_rows($result) == 0) {
     /* empty,invalid Sector */
     echo "<tr><td style=\"visibility:hidden\"></td><td colspan=\"5\" " . 
       "align=\"center\"><span class=\"red\">".
@@ -158,7 +158,7 @@ function print_gal_report ($x, $y) {
       $tag = get_alliance_tag($myrow["alliance_id"]);
     else
       $tag = "";
-    while ($mygal=mysql_fetch_row ($result)) {
+    while ($mygal=mysqli_fetch_row ($result)) {
       print_gal_row ($mygal, $x, $y, $scans, $tag);
     }
   }

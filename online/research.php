@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,11 +25,10 @@ require "standard.php";
 function print_rc_row ($row, $status) {
 
   global $db, $Planetid;
-  global $PHP_SELF;
 
   if ($row[7] !=0) {
-    $r = mysql_query ("SELECT name from rc_class WHERE id='$row[7]'", $db);
-    $myr = mysql_fetch_row($r);
+    $r = mysqli_query ($db, "SELECT name from rc_class WHERE id='$row[7]'" );
+    $myr = mysqli_fetch_row($r);
     $blocked_name = $myr[0];
   }
 
@@ -39,12 +38,13 @@ function print_rc_row ($row, $status) {
   if ($row[8]!=0) {
     echo ", $row[8] Eonium";
   } 
-  if ($blocked_name) echo "<br><font color=\"red\">Disables $blocked_name<font>";
+  if (ISSET($blocked_name)) 
+    echo "<br><font color=\"red\">Disables $blocked_name<font>";
   echo "</td>\n<td>";
   if ($row[5] == 2) {
-    $rb = mysql_query ("SELECT build_ticks from rc_build ".
-		       "WHERE planet_id='$Planetid' AND rc_id='$row[6]'", $db);
-    $myb = mysql_fetch_row($rb);
+    $rb = mysqli_query ($db, "SELECT build_ticks from rc_build ".
+		       "WHERE planet_id='$Planetid' AND rc_id='$row[6]'" );
+    $myb = mysqli_fetch_row($rb);
     echo "<b>$myb[0] ticks</b>";
   } else {
     echo "$row[4] ticks";
@@ -57,7 +57,7 @@ function print_rc_row ($row, $status) {
   case 1: if ($status) {
     echo "<span class=\"red\">Other research in progress</span>";
   } else {
-    echo "<a href=\"$PHP_SELF?id=$row[6]\">Research</a>";
+    echo "<a href=\"$_SERVER[PHP_SELF]?id=$row[6]\">Research</a>";
   }
   break;
   case -1: echo "Blocked"; break;
@@ -71,11 +71,11 @@ function build_research ($id) {
   global $myrow; /* resources */
   global $Planetid, $db,$msg;
 
-  $res = mysql_query ("SELECT metal, crystal, eonium ".
-		      "FROM rc_class WHERE id='$id'", $db);
+  $res = mysqli_query ($db, "SELECT metal, crystal, eonium ".
+		      "FROM rc_class WHERE id='$id'" );
 
-  if (mysql_num_rows($res) == 1) {
-    $price = mysql_fetch_row($res);
+  if (mysqli_num_rows($res) == 1) {
+    $price = mysqli_fetch_row($res);
     
     if ( $myrow["metal"] < $price[0] || $myrow["crystal"] < $price[1] ||
          $myrow["eonium"] < $price[2] ) {
@@ -84,17 +84,17 @@ function build_research ($id) {
       return 0;
     }
 
-    $res = mysql_query("UPDATE rc set status=2 ".
-		       "WHERE rc_id='$id' AND status=1 AND planet_id='$Planetid'", $db);
+    $res = mysqli_query($db, "UPDATE rc set status=2 ".
+		       "WHERE rc_id='$id' AND status=1 AND planet_id='$Planetid'" );
 
-    if (!$res || mysql_affected_rows($db)!=1) {
+    if (!$res || mysqli_affected_rows($db)!=1) {
       $msg="Can't research that now";
       return 0;
     } else {
       $query = "INSERT DELAYED INTO rc_build (planet_id,rc_id,build_ticks) ".
 	 "SELECT '$Planetid','$id',build_ticks from rc_class ".
 	 "WHERE id='$id'";
-      $res = mysql_query($query, $db);
+      $res = mysqli_query($db, $query );
 
       $myrow["metal"]   -= $price[0];
       $myrow["crystal"] -= $price[1];
@@ -102,7 +102,7 @@ function build_research ($id) {
       
       $q = "UPDATE planet SET metal='$myrow[metal]',crystal='$myrow[crystal]',".
 	 "eonium='$myrow[eonium]' where id='$Planetid'";
-      $res = mysql_query($q, $db);
+      $res = mysqli_query($db, $q );
     }
 
     return 1;
@@ -116,28 +116,31 @@ function build_research ($id) {
  * ist
  */
 $researching = 0;
-$result = mysql_query ("SELECT status from rc, rc_class ".
+$result = mysqli_query ($db, "SELECT status from rc, rc_class ".
 		       "WHERE rc.planet_id='$Planetid' ".
 		       "AND rc.rc_id=rc_class.id AND rc_class.type=0 ".
-		       "AND rc.status=2", 
-		       $db);
-if (mysql_num_rows($result) > 0) $researching = 1;
+		       "AND rc.status=2" 
+		       );
+if (mysqli_num_rows($result) > 0) $researching = 1;
 
-if ($id && $researching == 0) {
+if (ISSET($id) && $researching == 0) {
   $researching = build_research($id);
 }
 
-if ($toggle) {
+if (ISSET($toggle)) {
   if ($toggle==1) $mysettings -= 128;
   else $mysettings += 128;
-  mysql_query ("UPDATE user SET settings='$mysettings' ".
-               "WHERE planet_id='$Planetid'",$db);
+  mysqli_query ($db, "UPDATE user SET settings='$mysettings' ".
+               "WHERE planet_id='$Planetid'");
 }
 
 /* top table is written now */
 top_header($myrow);
 
-titlebox("Research",$msg);
+if (ISSET($msg) && $msg != "")
+     titlebox("Research",$msg);
+else
+     titlebox("Research");
 
 if ($mysettings & 128) {
   $rc_status = "rc.status IN (1,2)";
@@ -150,7 +153,7 @@ if ($mysettings & 128) {
 echo <<<EOF
 <center>
 <table border="0" width="650">
-<tr><td align="right"><a href="$PHP_SELF?toggle=$toggle">
+<tr><td align="right"><a href="$_SERVER[PHP_SELF]?toggle=$toggle">
     <span class="small">Toggle visibility</span></a></td></tr>
 </table>
 <table border="1" width="650">
@@ -168,9 +171,9 @@ $q = "SELECT rc_class.name, rc_class.description, rc_class.metal, ".
   "AND rc_class.type=0 AND rc.rc_id = rc_class.id AND rc_class.id!=0 ".
   "AND $rc_status ORDER BY rc_class.id";
 
-$result = mysql_query( $q, $db);
-if (mysql_num_rows($result) > 0) {
-  while ($myres = mysql_fetch_row($result)) {
+$result = mysqli_query($db,  $q );
+if (mysqli_num_rows($result) > 0) {
+  while ($myres = mysqli_fetch_row($result)) {
     print_rc_row ($myres, $researching);
   }
 } else {

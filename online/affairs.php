@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,18 +21,20 @@
 
 require "standard.php";
 require "news_util.php";
-require "planet_util.php";
+require "planet_util.inc";
 
 function select_list ($exclude=0) {
   global $db, $myrow;
+
+  $ret = "";
 
   $q = "SELECT leader, planetname, id FROM planet ".
      "WHERE x=$myrow[x] AND y=$myrow[y] ".
      "AND mode in (1,2,3,4,241,242,243,244) ORDER BY z ASC";
 
-  $result = mysql_query ($q, $db);
+  $result = mysqli_query ($db, $q );
 
-  while ($row = mysql_fetch_row($result)) {
+  while ($row = mysqli_fetch_row($result)) {
     if ($exclude != $row[2])
       $ret .= "<option value=\"$row[2]\">$row[0] of $row[1]</option>";
   }
@@ -40,23 +42,23 @@ function select_list ($exclude=0) {
 }
 
 function vote_rows ($vmin, &$table_stub) {
-  global $db, $myrow, $galcommander_id, $galcommander_name;
+  global $db, $myrow, $galcommander_id, $galcommander_name, $Planetid;
 
   $table_stub = "";
 
   $q = "SELECT leader, planetname, vote, id FROM planet ".
      "WHERE x=$myrow[x] AND y=$myrow[y] ORDER BY z ASC";
-  $result = mysql_query ($q, $db);
-  // $cnt = mysql_num_rows($result);
+  $result = mysqli_query ($db, $q );
+  // $cnt = mysqli_num_rows($result);
 
   $select = "<select name=\"gcvote\">";
 
-  while ($row = mysql_fetch_row($result)) {
+  while ($row = mysqli_fetch_row($result)) {
     $qq = "SELECT count(*) FROM planet ".
        "WHERE x=$myrow[x] AND y=$myrow[y] AND vote='$row[3]'";
-    $res = mysql_query ($qq, $db);
+    $res = mysqli_query ($db, $qq );
 
-    if ($res) $myvotes = mysql_fetch_row($res);
+    if ($res) $myvotes = mysqli_fetch_row($res);
     else $myvotes[0] = 0;
 
     if ($row[2] == 0 ) {
@@ -65,10 +67,10 @@ function vote_rows ($vmin, &$table_stub) {
       if( $row[2] == $Planetid) {
 	$mygc = "$row[0] of $row[1]";
       } else {
-	$res = mysql_query ("SELECT leader, planetname FROM planet ".
-			    "WHERE id='$row[2]'", $db);
+	$res = mysqli_query ($db, "SELECT leader, planetname FROM planet ".
+			    "WHERE id='$row[2]'" );
 	if ($res) {
-	  $mygc_row = mysql_fetch_row($res);
+	  $mygc_row = mysqli_fetch_row($res);
 	  $mygc = "$mygc_row[0] of $mygc_row[1]";
 	} else {
 	  $mygc = "$row[0] of $row[1]";
@@ -104,8 +106,8 @@ function vote_possible ()
   $q = "SELECT count(*) from planet WHERE x=$myrow[x] and y=$myrow[y] ".
        "AND mode IN (1,2,3,4,241,242,243,244)";
 
-  $result = mysql_query ($q, $db);
-  $row = mysql_fetch_row($result);
+  $result = mysqli_query ($db, $q );
+  $row = mysqli_fetch_row($result);
 
   return $row[0];
 }
@@ -114,8 +116,8 @@ function calc_exile_cost() {
   global $db, $myrow;
   
   $q = "SELECT sum(score) FROM planet WHERE x='$myrow[x]' AND y='$myrow[y]'";
-  $result = mysql_query ($q, $db);
-  $row = mysql_fetch_row($result);
+  $result = mysqli_query ($db, $q );
+  $row = mysqli_fetch_row($result);
 
   return (int) ($row[0]*0.05);
 }
@@ -131,18 +133,18 @@ $count = vote_possible();
 $needed_votes = ceil ($count*0.51);
 if ($Planetid==1) $needed_votes = 1;
 
-if ($gcvote && $myvote) {
+if (ISSET($gcvote) && ISSET($myvote)) {
 
   if ($gcvote < 0) { 
     $gcvote = 0;
-    mysql_query ("UPDATE planet set vote=0 WHERE id='$Planetid'", $db);
+    mysqli_query ($db, "UPDATE planet set vote=0 WHERE id='$Planetid'" );
     $msg = "You decided not to vote any GC";
   } else {
     $gname = get_coord_name ($gcvote);
 
     if ($gname['x'] == $myrow['x'] && $gname['y'] == $myrow['y']) {
-      mysql_query ("UPDATE planet set vote='$gcvote' ".
-    	           "WHERE id='$Planetid'", $db);
+      mysqli_query ($db, "UPDATE planet set vote='$gcvote' ".
+    	           "WHERE id='$Planetid'" );
       if ($gcvote != $Planetid) {
         $msg = "$myrow[leader] of $myrow[planetname] voted for You as ".
                "Galactic Commander";
@@ -161,22 +163,22 @@ if ($gcvote && $myvote) {
 $select = vote_rows($needed_votes, $table_stub);
 
 
-if ($galcommander_id == $myrow[id]) {
+if ($galcommander_id == $myrow["id"]) {
 
-  if ($newname && $changename) {
+  if (ISSET($newname) && ISSET($changename)) {
     $newname = htmlspecialchars ($newname);
-    $res = mysql_query("UPDATE galaxy set name='$newname' ".
-		       "WHERE x='$myrow[x]' AND y='$myrow[y]'", $db);
+    $res = mysqli_query($db, "UPDATE galaxy set name='$newname' ".
+		       "WHERE x='$myrow[x]' AND y='$myrow[y]'" );
   } else {
-    $res = mysql_query("SELECT name from galaxy ".
-		       "WHERE x='$myrow[x]' AND y='$myrow[y]'", $db);
-    if ($res && mysql_num_rows($res)) {
-      $row = mysql_fetch_row($res);
+    $res = mysqli_query($db, "SELECT name from galaxy ".
+		       "WHERE x='$myrow[x]' AND y='$myrow[y]'" );
+    if ($res && mysqli_num_rows($res)) {
+      $row = mysqli_fetch_row($res);
       $newname = $row[0];
     }
   }
 
-  if ($newpic && $changepic) {
+  if (ISSET($newpic) && ISSET($changepic)) {
     $newpic = htmlspecialchars ($newpic);
     $pend = strtolower(substr($newpic, -3));
     if ($newpic != "CLEAR" &&
@@ -186,55 +188,55 @@ if ($galcommander_id == $myrow[id]) {
 	  $pend != "png" && $pend != "tif"))) {
  
         // same as below - quick and dirty
-        $res = mysql_query("SELECT pic from galaxy ".
-		       "WHERE x='$myrow[x]' AND y='$myrow[y]'", $db);
-        if ($res && mysql_num_rows($res)) {
-          $row = mysql_fetch_row($res);
+        $res = mysqli_query($db, "SELECT pic from galaxy ".
+		       "WHERE x='$myrow[x]' AND y='$myrow[y]'" );
+        if ($res && mysqli_num_rows($res)) {
+          $row = mysqli_fetch_row($res);
           $newpic = $row[0];
         }
 
     } else {
       if ($newpic == "CLEAR")
 	$newpic = "";
-      $res = mysql_query("UPDATE galaxy set pic='$newpic' ".
-		       "WHERE x='$myrow[x]' AND y='$myrow[y]'", $db);
+      $res = mysqli_query($db, "UPDATE galaxy set pic='$newpic' ".
+		       "WHERE x='$myrow[x]' AND y='$myrow[y]'" );
     }
   } else {
-    $res = mysql_query("SELECT pic from galaxy ".
-		       "WHERE x='$myrow[x]' AND y='$myrow[y]'", $db);
-    if ($res && mysql_num_rows($res)) {
-      $row = mysql_fetch_row($res);
+    $res = mysqli_query($db, "SELECT pic from galaxy ".
+		       "WHERE x='$myrow[x]' AND y='$myrow[y]'" );
+    if ($res && mysqli_num_rows($res)) {
+      $row = mysqli_fetch_row($res);
       $newpic = $row[0];
     }
   }
 
-  if ($newmsg && $changemsg) {
+  if (ISSET($newmsg) && ISSET($changemsg)) {
     $rmsg = htmlspecialchars ($newmsg);
     if (strlen ($rmsg) > 2047 ) $newmsg = substr($rmsg, 0, 2047);
     else $newmsg = $rmsg;
-    $res = mysql_query("UPDATE galaxy set text='$newmsg' ".
-		       "WHERE x='$myrow[x]' AND y='$myrow[y]'", $db);
+    $res = mysqli_query($db, "UPDATE galaxy set text='$newmsg' ".
+		       "WHERE x='$myrow[x]' AND y='$myrow[y]'" );
   } else {
-    $res = mysql_query("SELECT text from galaxy ".
-		       "WHERE x='$myrow[x]' AND y='$myrow[y]'", $db);
-    if ($res && mysql_num_rows($res)) {
-      $row = mysql_fetch_row($res);
+    $res = mysqli_query($db, "SELECT text from galaxy ".
+		       "WHERE x='$myrow[x]' AND y='$myrow[y]'" );
+    if ($res && mysqli_num_rows($res)) {
+      $row = mysqli_fetch_row($res);
       $newmsg = $row[0];
     }
   }
 
   $moc_list = select_list($myrow["id"]);
 
-  if ($changemoc && $mocvote && $myrow["id"] == $galcommander_id) {
+  if (ISSET($changemoc) && ISSET($mocvote) && $myrow["id"] == $galcommander_id) {
     if ($mocvote == -1) {
-      mysql_query("UPDATE galaxy SET moc=0 ".
-                  "WHERE x=$myrow[x] and y=$myrow[y]", $db);
+      mysqli_query($db, "UPDATE galaxy SET moc=0 ".
+                  "WHERE x=$myrow[x] and y=$myrow[y]" );
     } else {
-      $res = mysql_query("SELECT x,y,z FROM planet WHERE id='$mocvote' ".
- 		         "AND x=$myrow[x] and y=$myrow[y]", $db);
-      if ($res && mysql_num_rows($res)>0) {
-        mysql_query("UPDATE galaxy SET moc=$mocvote ".
-  		    "WHERE x=$myrow[x] and y=$myrow[y]", $db);
+      $res = mysqli_query($db, "SELECT x,y,z FROM planet WHERE id='$mocvote' ".
+ 		         "AND x=$myrow[x] and y=$myrow[y]" );
+      if ($res && mysqli_num_rows($res)>0) {
+        mysqli_query($db, "UPDATE galaxy SET moc=$mocvote ".
+  		    "WHERE x=$myrow[x] and y=$myrow[y]" );
         $mail = "$myrow[leader] of $myrow[planetname] has choosen you as his ".
 	   "Minister of Communication.";
         insert_into_news ($mocvote, 10, $mail); 
@@ -243,10 +245,10 @@ if ($galcommander_id == $myrow[id]) {
   }
 
   $elected_ministers = "";
-  $res = mysql_query ("SELECT moc,mod,mow FROM galaxy ".
-       "WHERE x=$myrow[x] and y=$myrow[y]", $db);
-  if ($res && mysql_num_rows($res)>0) {
-     $row = mysql_fetch_array ($res);
+  $res = mysqli_query ($db, "SELECT moc,mod,mow FROM galaxy ".
+       "WHERE x=$myrow[x] and y=$myrow[y]" );
+  if ($res && mysqli_num_rows($res)>0) {
+     $row = mysqli_fetch_array ($res);
      if ($row["moc"]!=0 ) {
         $md = get_coord_name ($row["moc"]);
         $elected_ministers = "<tr><td>Minister of Communication</td>".
@@ -255,22 +257,23 @@ if ($galcommander_id == $myrow[id]) {
      }
   }
 
-  if ($mytick>0 && $startexile && $exilevote && $myrow["id"] == $galcommander_id) {
+  if ($mytick>0 && ISSET($startexile) && ISSET($exilevote) 
+      && $myrow["id"] == $galcommander_id) {
     $ecost = calc_exile_cost();
 
-    $res = mysql_query("SELECT x,y,z FROM planet WHERE id='$exilevote' ".
-		       "AND x=$myrow[x] and y=$myrow[y]", $db);
+    $res = mysqli_query($db, "SELECT x,y,z FROM planet WHERE id='$exilevote' ".
+		       "AND x=$myrow[x] and y=$myrow[y]" );
 
-    if ($res && mysql_num_rows($res)>0) {
+    if ($res && mysqli_num_rows($res)>0) {
       // check for res and take it
        $pay = 0;
 
        $q = "SELECT metal, crystal, eonium FROM galaxy ".
          "WHERE x='$myrow[x]' AND y='$myrow[y]'";
-       $res = mysql_query ($q, $db);
+       $res = mysqli_query ($db, $q );
        
        if ($res) {
-         $grow = mysql_fetch_row($res);
+         $grow = mysqli_fetch_row($res);
 
          if (($grow[0]+$grow[1]+$grow[2]) > $ecost) {
             // ok we have enough
@@ -291,8 +294,8 @@ if ($galcommander_id == $myrow[id]) {
             } else {
               $ge -= $ecost;
             }
-            mysql_query ("UPDATE galaxy SET metal='$gm',crystal='$gc',eonium='$ge' ".
-              "WHERE x=$myrow[x] and y=$myrow[y]", $db);
+            mysqli_query ($db, "UPDATE galaxy SET metal='$gm',crystal='$gc',eonium='$ge' ".
+              "WHERE x=$myrow[x] and y=$myrow[y]" );
             $pay = 1;
          } else {
             // not evaluated !
@@ -303,29 +306,29 @@ if ($galcommander_id == $myrow[id]) {
 
        if ( $pay==1 ) {
         // reset 
-        mysql_query ("UPDATE planet SET exile_vote=0 ".
-		     "WHERE x=$myrow[x] and y=$myrow[y]",$db); 
+        mysqli_query ($db, "UPDATE planet SET exile_vote=0 ".
+		     "WHERE x=$myrow[x] and y=$myrow[y]"); 
 
         // start
-        mysql_query("UPDATE galaxy SET exile_id=$exilevote, ".
+        mysqli_query($db, "UPDATE galaxy SET exile_id=$exilevote, ".
 	  	    "exile_date=now() + INTERVAL 18 HOUR ".
-		    "WHERE x=$myrow[x] and y=$myrow[y]", $db);
+		    "WHERE x=$myrow[x] and y=$myrow[y]" );
         // send info
         $nmsg = "$myrow[leader] of $myrow[planetname] has started an exile ".
 	  "vote on You. It will run for 18 hours from now.";
         insert_into_news ($exilevote, 10, $nmsg); 
 
         // set my vote
-        mysql_query ("UPDATE planet SET exile_vote=1 WHERE id='$Planetid'",$db); 
+        mysqli_query ($db, "UPDATE planet SET exile_vote=1 WHERE id='$Planetid'"); 
         $myrow["exile_vote"] = 1;
       }
     } else {
       // CLEAR
-      mysql_query ("UPDATE planet SET exile_vote=0 ".
-		   "WHERE x=$myrow[x] and y=$myrow[y]",$db); 
-      mysql_query("UPDATE galaxy SET exile_id=0, ".
+      mysqli_query ($db, "UPDATE planet SET exile_vote=0 ".
+		   "WHERE x=$myrow[x] and y=$myrow[y]"); 
+      mysqli_query($db, "UPDATE galaxy SET exile_id=0, ".
 		  "exile_date=0 ".
-		  "WHERE x=$myrow[x] and y=$myrow[y]", $db);
+		  "WHERE x=$myrow[x] and y=$myrow[y]" );
     }
   }
 }
@@ -336,7 +339,7 @@ titlebox("Affairs", $msg);
 ?>
 
 <center>
-<form method="post" action="<?php echo $PHP_SELF?>">
+<form method="post" action="<?php echo $_SERVER["PHP_SELF"]?>">
 <table width="650" border="1" cellpadding="5">
 <tr><th colspan="3" class="a">Change GC Vote
 </td></tr>
@@ -361,36 +364,36 @@ if ( $count < 1) {
     echo "<tr><td colspan=\"3\" align=\"center\">".
       "<b>Your GC is <span class=\"gc\">$galcommander_name</span></b></td></tr>";
 
-    $res = mysql_query ("UPDATE galaxy set gc='$galcommander_id' WHERE ".
-			"x='$myrow[x]' AND y='$myrow[y]'", $db);
+    $res = mysqli_query ($db, "UPDATE galaxy set gc='$galcommander_id' WHERE ".
+			"x='$myrow[x]' AND y='$myrow[y]'" );
   } else {
-    $res = mysql_query ("UPDATE galaxy set gc=0,moc=0 ".
-			"WHERE x='$myrow[x]' AND y='$myrow[y]'", $db);
+    $res = mysqli_query ($db, "UPDATE galaxy set gc=0,moc=0 ".
+			"WHERE x='$myrow[x]' AND y='$myrow[y]'" );
   }
 }
 
 echo "</table>\n</form>\n<br>\n";
 
-$res = mysql_query ("SELECT exile_id, date_format(exile_date,'%D %b %H:%i CEST') ".
+$res = mysqli_query ($db, "SELECT exile_id, date_format(exile_date,'%D %b %H:%i CEST') ".
 		    "AS exile_date FROM galaxy ".
-		    "WHERE x=$myrow[x] and y=$myrow[y] AND exile_id!=0", $db);
+		    "WHERE x=$myrow[x] and y=$myrow[y] AND exile_id!=0" );
 
-if ($mytick>0 && $res && mysql_num_rows($res)>0) {
+if ($mytick>0 && $res && mysqli_num_rows($res)>0) {
 
   if ($exvote) {
-    mysql_query ("UPDATE planet SET exile_vote='$myexvote' WHERE id='$Planetid'", $db);
+    mysqli_query ($db, "UPDATE planet SET exile_vote='$myexvote' WHERE id='$Planetid'" );
     $myrow["exile_vote"] = $myexvote;
   }
 
-  $row = mysql_fetch_row($res);
+  $row = mysqli_fetch_row($res);
   $exwho = get_coord_name ($row[0]);
 
   if ($myrow["exile_vote"] == 1) $check_yes = "checked";
   else $check_no = "checked";
 
-  $res = mysql_query("SELECT count(*) FROM planet ".
-		     "WHERE x=$myrow[x] and y=$myrow[y] AND exile_vote=1", $db);
-  $rex = mysql_fetch_row($res);
+  $res = mysqli_query($db, "SELECT count(*) FROM planet ".
+		     "WHERE x=$myrow[x] and y=$myrow[y] AND exile_vote=1" );
+  $rex = mysqli_fetch_row($res);
   $yes_vote = $rex[0];
   $no_vote = $count - $yes_vote;
   $yes_percent = ((1000 * $yes_vote) / $count) * 1. / 10.;
@@ -398,7 +401,7 @@ if ($mytick>0 && $res && mysql_num_rows($res)>0) {
   
   echo <<<EOF
     <br>
-    <form method="post" action="$PHP_SELF">
+    <form method="post" action="$_SERVER[PHP_SELF]">
     <table width="650" border="1" cellpadding="5">
     <tr><th colspan="3" class="a">Exile voting</th></tr>
     <tr><td colspan="3">There is an exile vote running against $exwho[leader] of 
@@ -421,12 +424,12 @@ if ($mytick>0 && $res && mysql_num_rows($res)>0) {
 EOF;
 }
 
-if ($galcommander_id == $myrow[id]) {
+if ($galcommander_id == $myrow["id"]) {
 
   $exile_cost = calc_exile_cost();
 
   echo <<<EOF
- <form method="post" action="$PHP_SELF">
+ <form method="post" action="$_SERVER[PHP_SELF]">
  <table width="650" border="1" cellpadding="5">
     <tr><th colspan="3" class="a">Commander options</th></tr>
     <tr><th colspan="3" bgcolor="#ff0000">

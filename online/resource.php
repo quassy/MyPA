@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@ require "logging.php";
 require "res_calc.php";
 
 $msg = "";
-if ($submit) {
+if (ISSET($submit)) {
 
   $metal = (int) $metal;
   $crystal = (int) $crystal;
@@ -35,9 +35,9 @@ if ($submit) {
   } else {
 
   $q = "SELECT planet_id FROM fleet WHERE target_id='$Planetid' and type>9";
-  $res = mysql_query($q, $db);
-  if ($res && mysql_num_rows($res) >0) {
-    $tid = mysql_fetch_row($res);
+  $res = mysqli_query($db, $q );
+  if ($res && mysqli_num_rows($res) >0) {
+    $tid = mysqli_fetch_row($res);
     do_log_me (5, 1, "($metal, $crystal, $eon) - attacker: [" . $tid[0] . "]");
   } else {
     do_log_me (5, 2, "($metal, $crystal, $eon)");
@@ -99,7 +99,7 @@ if ($submit) {
   $score = ($metal+$crystal+$eon)*$score_per_roid;
 
   $myrow["score"] += $score;
-  $result = mysql_query("UPDATE planet SET metalroids=metalroids+'$metal', ".
+  $result = mysqli_query($db, "UPDATE planet SET metalroids=metalroids+'$metal', ".
                         "crystalroids=crystalroids+'$crystal', ".
                         "eoniumroids=eoniumroids+'$eon', ".
                         "uniniroids=uniniroids-'$troid', ".
@@ -107,13 +107,13 @@ if ($submit) {
                         "score=score+'$score' ".
                         "WHERE id='$Planetid' ".
                         "AND uniniroids>=$myrow[uniniroids]+$troid ".
-                        "AND metal>=$tcost", $db);
+                        "AND metal>=$tcost" );
   } /* idiot catching */
 }
 
 $resources = calc_roid_resource ($myrow);
 
-if ($submit) {
+if (ISSET($submit)) {
   if ($metal>0)  $msg .= "Initialized $metal Metal roids<br>\n";
   if ($crystal>0) $msg .= "Initialized $crystal Crystal roids<br>\n";
   if ($eon>0) $msg .= "Initialized $eon Eonium roids<br>\n";
@@ -123,7 +123,7 @@ if ($submit) {
   if ($tcost>0) $msg .= "For a total of $tcost Metal\n";
 } else {
 
-  if ($donate) {
+  if (ISSET($donate)) {
     $md = (int) $metal_donate;    
     $cd = (int) $crystal_donate;    
     $ed = (int) $eonium_donate;    
@@ -140,15 +140,15 @@ if ($submit) {
     $q = "UPDATE planet SET metal=metal-$md, crystal=crystal-$cd,".
        "eonium=eonium-$ed WHERE id='$Planetid' ".
        "AND metal>=$md AND crystal>=$cd AND eonium>=$ed";
-    $mre = mysql_query ($q, $db);
-    if ($mre && mysql_affected_rows($db)==1) {
+    $mre = mysqli_query ($db, $q );
+    if ($mre && mysqli_affected_rows($db)==1) {
       $q = "UPDATE galaxy SET metal=metal+$md, crystal=crystal+$cd,".
          "eonium=eonium+$ed WHERE x='$myrow[x]' AND y='$myrow[y]'";
-      mysql_query ($q, $db);
+      mysqli_query ($db, $q );
     }
     if ($md==0 && $cd==0 && $ed==0) $msg .= "You do not have enough resources";
   }
-  if ($trade) {
+  if (ISSET($trade)) {
     $tn = (int) ($trade_num * 1.05);
     $tg = (int) ($trade_num);
     if ($trade_from == $trade_to) {
@@ -157,9 +157,9 @@ if ($submit) {
     if ($tn > 0) {
        $q = "SELECT metal, crystal, eonium FROM galaxy ".
          "WHERE x='$myrow[x]' AND y='$myrow[y]'";
-       $res = mysql_query ($q, $db);
+       $res = mysqli_query ($db, $q );
        if ($res) {
-         $grow = mysql_fetch_array($res);
+         $grow = mysqli_fetch_array($res);
 
          if ($tn > $myrow[$trade_from]) {
             $tn = (int) ($trade_num);
@@ -175,11 +175,11 @@ if ($submit) {
                $trade_to."=".$trade_to."-'$tg' ".
                "WHERE x='$myrow[x]' AND y='$myrow[y]' ".
                "AND ".$trade_to.">='$tg'";
-           $mre = mysql_query ($q, $db);
-           if ($mre && mysql_affected_rows($db)==1) {
+           $mre = mysqli_query ($db, $q );
+           if ($mre && mysqli_affected_rows($db)==1) {
              $q = "UPDATE planet SET ".$trade_from."=".$trade_from."-'$tn', ".
                 $trade_to."=".$trade_to."+'$tg' WHERE id='$Planetid'";
-             mysql_query ($q, $db);
+             mysqli_query ($db, $q );
 
              $msg .= "Trade done. 5% tax deducted.";
            }
@@ -191,7 +191,7 @@ if ($submit) {
     }
   }
 }
-if ($galfund) {
+if (ISSET($galfund)) {
 
 require "news_util.php";
 
@@ -204,21 +204,21 @@ require "news_util.php";
     $q = "SELECT id, metal,crystal,eonium FROM galaxy ".
          "WHERE x='$myrow[x]' AND y='$myrow[y]' AND moc='$Planetid' ".
          "AND donation_date + INTERVAL 24 HOUR < NOW()";
-    $res = mysql_query($q, $db);
+    $res = mysqli_query($db, $q );
     
-    if (mysql_num_rows($res) == 1 ) {
-         $grow = mysql_fetch_row($res);
+    if (mysqli_num_rows($res) == 1 ) {
+         $grow = mysqli_fetch_row($res);
 
          // first update against bots
-         mysql_query("UPDATE galaxy SET donation_date=NOW() ".
-                     "WHERE x='$myrow[x]' AND y='$myrow[y]'", $db);
+         mysqli_query($db, "UPDATE galaxy SET donation_date=NOW() ".
+                     "WHERE x='$myrow[x]' AND y='$myrow[y]'" );
 
         // recheck score
         $q = "SELECT id,x,y,z,leader,planetname,score FROM planet ".
              "WHERE x=$myrow[x] AND y=$myrow[y] ORDER BY score ASC LIMIT 2";
-        $res = mysql_query($q, $db);
+        $res = mysqli_query($db, $q );
         $valid = 0;
-        while (!$valid && $row = mysql_fetch_row($res)) {
+        while (!$valid && $row = mysqli_fetch_row($res)) {
           if ($row[0] == $target) $valid = 1;
         }
 
@@ -227,10 +227,10 @@ require "news_util.php";
           $cd = (int) ($cd * 2 > $grow[2]?$grow[2]/2:$cd);
           $ed = (int) ($ed * 2 > $grow[3]?$grow[3]/2:$ed);
 
-          mysql_query("UPDATE galaxy SET metal=metal-$md,crystal=crystal-$cd,".
-                      "eonium=eonium-$ed WHERE id=$grow[0]", $db);
-          mysql_query("UPDATE planet SET metal=metal+$md,crystal=crystal+$cd,".
-                      "eonium=eonium+$ed WHERE id='$target'", $db);
+          mysqli_query($db, "UPDATE galaxy SET metal=metal-$md,crystal=crystal-$cd,".
+                      "eonium=eonium-$ed WHERE id=$grow[0]" );
+          mysqli_query($db, "UPDATE planet SET metal=metal+$md,crystal=crystal+$cd,".
+                      "eonium=eonium+$ed WHERE id='$target'" );
           $text = "Donated $md Metal, $cd Crystal and $ed Eonium to ".
                   "$row[4] of $row[5] ($row[1]:$row[2]:$row[3]).";
           $msg .= $text;
@@ -243,8 +243,8 @@ require "news_util.php";
             $myrow["eonium"] += $ed;
           }
         } else {
-          mysql_query("UPDATE galaxy SET donation_date=NOW()-INTERVAL 24 HOUR ".
-                      "WHERE x='$myrow[x]' AND y='$myrow[y]'", $db);
+          mysqli_query($db, "UPDATE galaxy SET donation_date=NOW()-INTERVAL 24 HOUR ".
+                      "WHERE x='$myrow[x]' AND y='$myrow[y]'" );
           $msg .= "Target score too high!";
         }
     } else {
@@ -288,7 +288,7 @@ titlebox("Resource",$msg);
 if ($myrow["uniniroids"] >0) {
   $cost = calc_init_cost ($myrow);
 ?>
-  <form method="post" action="<?php echo $PHP_SELF?>">
+  <form method="post" action="<?php echo $_SERVER["PHP_SELF"]?>">
   <table width="450" border="1">
 
   <tr><th colspan="2" align="center" class="a">
@@ -330,13 +330,13 @@ EOF;
 
   $q = "SELECT metal, crystal, eonium FROM galaxy ".
        "WHERE x='$myrow[x]' AND y='$myrow[y]'";
-  $res = mysql_query ($q, $db);
+  $res = mysqli_query ($db, $q );
   if ($res) {
-    $grow = mysql_fetch_row($res);
+    $grow = mysqli_fetch_row($res);
 
     echo<<<EOF
 <br>
-<form method="post" action="$PHP_SELF">
+<form method="post" action="$_SERVER[PHP_SELF]">
 <table width="450" border="1">
   <tr><th colspan="4" align="center" class="a">Donate to Galaxy Fund</th></tr>
   <tr><th width="150">Resource</th><th width="100">Fund</th>
@@ -361,7 +361,7 @@ EOF;
 </form>
 
 <br>
-<form method="post" action="$PHP_SELF">
+<form method="post" action="$_SERVER[PHP_SELF]">
 <table width="450" border="1">
 <tr><th align="center" class="a">Trade with the 
 Galaxy Fund</th></tr>
@@ -386,14 +386,14 @@ EOF;
          "date_format(donation_date + INTERVAL 24 HOUR, ".
          "\"%D %M %H:%m:%s\") AS nextd FROM galaxy ".
          "WHERE x='$myrow[x]' AND y='$myrow[y]' AND moc='$Planetid'";
-    $res = mysql_query($q, $db);
+    $res = mysqli_query($db, $q );
 
-    if (mysql_num_rows($res) == 1) {
-      $row = mysql_fetch_row($res);
+    if (mysqli_num_rows($res) == 1) {
+      $row = mysqli_fetch_row($res);
 
         echo <<<EOF
 <br>
-<form method="post" action="$PHP_SELF">
+<form method="post" action="$_SERVER[PHP_SELF]">
 <table width="450" border="1">
   <tr><th class="a" colspan="3">Galaxy fund administration</th></tr>
   <tr><td colspan=3>Donation is possible <b>once per 24 hours</b> to one 
@@ -404,14 +404,14 @@ EOF;
       if ($row[1] == 0) {
         // next time to donate
         echo <<<EOF
-  <tr><td colspan=3>Next possible donation date is <b>$row[2]</b>.</td></tr>";
+  <tr><td colspan=3>Next possible donation date is <b>$row[2]</b>.</td></tr>
   </table>
 EOF;
       } else {
         $q = "SELECT id,x,y,z,leader,planetname,score FROM planet ".
              "WHERE x=$myrow[x] AND y=$myrow[y] ORDER BY score ASC LIMIT 2";
-        $res = mysql_query($q, $db);
-        while ($row = mysql_fetch_row($res)) {
+        $res = mysqli_query($db, $q );
+        while ($row = mysqli_fetch_row($res)) {
           $sel_who .= "<option value=\"$row[0]\">$row[4] of $row[5] ".
             "($row[1]:$row[2]:$row[3])</option>";
         }

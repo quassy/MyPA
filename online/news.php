@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,6 @@ function add_img_path($name, $alt) {
 }
 
 function print_news_head ($date, $type, $id, $ntick) {
-  global $PHP_SELF;
 
   switch ($type) {
   case 1: $img = add_img_path("battle.png","Bat"); $txt = "Military"; break;
@@ -60,18 +59,18 @@ function print_news_head ($date, $type, $id, $ntick) {
     $stick = " MyT $ntick,";
   echo "<tr><td width=\"32\" height=\"32\" class=\"c\">$img</td>".
        "<td width=\"540\">$date CEST,$stick $txt</td>".
-       "<td width=\"70\" align=\"right\"><a href=\"$PHP_SELF?hide=$id\">".
+       "<td width=\"70\" align=\"right\"><a href=\"$_SERVER[PHP_SELF]?hide=$id\">".
        "delete</a></td></tr>";
 }
 
 /* clear has_news flag if present */
 if ($myrow["has_news"] == 1) {
   $myrow["has_news"] = 0;
-  mysql_query ("UPDATE planet SET has_news=0 WHERE id='$Planetid'", $db);
+  mysqli_query ($db, "UPDATE planet SET has_news=0 WHERE id='$Planetid'" );
 }
 
 $msg = "";
-if ($clear && $clear != "") {
+if (ISSET($clear) && $clear != "") {
 
   $myrow["news_deleted"] = urldecode($clear);
   if ($myrow["news_deleted"] == "recover") {
@@ -80,13 +79,13 @@ if ($clear && $clear != "") {
   } else {
     $msg = "News deleted until " . $myrow["news_deleted"] . "\n<br>\n";
   }
-  mysql_query ("UPDATE planet SET news_deleted='$myrow[news_deleted]' ".
-               "WHERE id='$Planetid'", $db);
+  mysqli_query ($db, "UPDATE planet SET news_deleted='".$myrow['news_deleted']."' ".
+               "WHERE id='$Planetid'" );
 }
 
-if ($hide) {
-  mysql_query ("UPDATE news SET hidden=1 ".
-    "WHERE planet_id='$Planetid' AND id='$hide'", $db);
+if (ISSET($hide)) {
+  mysqli_query ($db, "UPDATE news SET hidden=1 ".
+    "WHERE planet_id='$Planetid' AND id='$hide'" );
 }
 
 /* top table is written now */
@@ -130,9 +129,9 @@ if ($imgpath && $imgpath!= "") {
 </table>
 <br>
 
-<a href="<?php echo "$PHP_SELF?clear=" . urlencode(date("y-m-d H:i:s")); ?>">Clear all news</a>
+<a href="<?php echo "$_SERVER[PHP_SELF]?clear=" . urlencode(date("y-m-d H:i:s")); ?>">Clear all news</a>
 &nbsp;|&nbsp;
-<a href="<?php echo "$PHP_SELF?clear=recover"; ?>">Recover news</a>
+<a href="<?php echo "$_SERVER[PHP_SELF]?clear=recover"; ?>">Recover news</a>
 
 <br>
 <br>
@@ -146,10 +145,10 @@ $q = "SELECT date, type, text, id, tick ".
      "AND date > '$myrow[news_deleted]' AND hidden=0 ".
      "ORDER BY date DESC";
 
-$result = mysql_query ($q, $db);
+$result = mysqli_query ($db, $q );
 
-if ($result && mysql_num_rows($result) > 0) {
-  while ($row = mysql_fetch_row($result)) {
+if ($result && mysqli_num_rows($result) > 0) {
+  while ($row = mysqli_fetch_row($result)) {
     print_news_head ($row[0], $row[1], $row[3], $row[4]);
     echo "<tr><td width=\"32\">&nbsp;</td>".
          "<td width=\"618\" colspan=\"2\">$row[2]</td></tr>";

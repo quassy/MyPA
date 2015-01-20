@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,26 +23,26 @@ require_once "admhead.php";
 require_once "admform.php";
 require_once "../logging.php";
 
-if ($submit) echo "Found submit<br>";
-if ($playerid) echo "Playerid $playerid<br>";
-if ($verification) echo "Verification: $verification<br>";
+if (ISSET($submit)) echo "Found submit<br>";
+if (ISSET($playerid)) echo "Playerid $playerid<br>";
+if (ISSET($verification)) echo "Verification: $verification<br>";
 
-if ($submit && $playerid && $playerid != 1) {
+if (ISSET($submit) && ISSET($playerid) && $playerid != 1) {
 
-  if ($verification && $verification==$playerid) {
+  if (ISSET($verification) && $verification==$playerid) {
       $q = "UPDATE planet set mode=0 WHERE id='$playerid'";
-      mysql_query ($q, $db);
+      mysqli_query ($db, $q );
 //      echo "DEBUG: $q (not executed)<br>";
       echo "<center>Planet banned</center>";
       do_log_id ($playerid,2,5,"$reason");
   } else {
     $q = "SELECT leader,planetname,x,y,z FROM planet WHERE id='$playerid'";
-    $result = mysql_query ($q, $db);
-    if ($result && mysql_num_rows($result) > 0) {
-      $row = mysql_fetch_row($result);
+    $result = mysqli_query ($db, $q );
+    if ($result && mysqli_num_rows($result) > 0) {
+      $row = mysqli_fetch_row($result);
       echo <<<EOF
 <center>
-<form method="post" action="$PHP_SELF">
+<form method="post" action="$_SERVER[PHP_SELF]">
 <table  width="640" border="1" cellpadding="2" >
 <tr><td>
    Really ban this player?&nbsp;
@@ -67,7 +67,7 @@ EOF;
 <center>
 <table  width="640" border="1" cellpadding="2" >
 <tr>
-<form method="post" action="$PHP_SELF">
+<form method="post" action="$_SERVER[PHP_SELF]">
   <td align="center" bgcolor="#c0c0c0">Enter target id:</td>
   <td><input type="text" name="playerid" size="25"></td>
   <td colspan="2"><input type=submit value="  Search  " name=submit></td>

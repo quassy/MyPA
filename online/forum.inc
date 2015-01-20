@@ -2,7 +2,7 @@
 
 /*
  * MyPHPpa
- * Copyright (C) 2003 Jens Beyer
+ * Copyright (C) 2003, 2007 Jens Beyer
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@ function post_ref ($fstyle, $title, $opt) {
 }
 
 function print_thread_line($row, $authorized) {
-  global $PHP_SELF, $Planetid, $fcreator;
+  global $Planetid, $fcreator;
 
   $tdmod_1 = "";
   $tdmod_2 = "";
@@ -56,16 +56,16 @@ function print_thread_line($row, $authorized) {
   if ($row[4] == $fcreator
       || $Planetid == $authorized) {
     echo "<tr>".
-      "<td><a href=\"$PHP_SELF?fthread=$row[0]\">$row[1]</a></td>".
+      "<td><a href=\"".$_SERVER["PHP_SELF"]."?fthread=$row[0]\">$row[1]</a></td>".
       "<td $tdmod_1>$row[4]</td>".
       "<td align=\"right\">$row[5]</td>".
       "<td $tdmod_2>$thread_leader</td>".
       "<td align=\"center\">$row[2]</td>".
-      "<td><a href=\"$PHP_SELF?fdel=$row[0]\">D</a></td>".
+      "<td><a href=\"$_SERVER[PHP_SELF]?fdel=$row[0]\">D</a></td>".
     "</tr>\n";
   } else {
     echo "<tr>".
-      "<td><a href=\"$PHP_SELF?fthread=$row[0]\">$row[1]</a></td>".
+      "<td><a href=\"".$_SERVER["PHP_SELF"]."?fthread=$row[0]\">$row[1]</a></td>".
       "<td $tdmod_1>$row[4]</td>".
       "<td align=\"right\">$row[5]</td>".
       "<td $tdmod_2>$thread_leader</td>".
@@ -109,10 +109,10 @@ function print_threads ($fstyle, $gal_id,$authorized) {
        "WHERE gal_id='$gal_id' ORDER by d DESC";
   }
 
-  $result = mysql_query ($q, $db);
+  $result = mysqli_query ($db, $q );
   
-  if ($result && mysql_num_rows($result) > 0) {
-    while ($row = mysql_fetch_row($result)) {
+  if ($result && mysqli_num_rows($result) > 0) {
+    while ($row = mysqli_fetch_row($result)) {
       print_thread_line($row,$authorized);
     }
   } else {
@@ -122,7 +122,7 @@ function print_threads ($fstyle, $gal_id,$authorized) {
 }
 
 function show_thread_post ($fstyle, $row, $thread, $authorized) {
-  global $Planetid, $fcreator, $PHP_SELF;
+  global $Planetid, $fcreator;
 
   $txt = ereg_replace ("<", "&lt;", $row[2]);
   $text = ereg_replace ("\n", "<br>", $txt);
@@ -138,11 +138,11 @@ function show_thread_post ($fstyle, $row, $thread, $authorized) {
   }
 
   if ($fcreator == $row[0]) {
-    echo "<br><a href=\"$PHP_SELF?fthread=$thread&fdelp=$row[4]\">".
+    echo "<br><a href=\"".$_SERVER["PHP_SELF"]."?fthread=$thread&fdelp=$row[4]\">".
       "Delete</a> | ". post_ref($fstyle, "Edit_posting","edit=$row[4]") . 
       "Edit</a>";
   } else if ($Planetid == $authorized) {
-    echo "<br><a href=\"$PHP_SELF?fthread=$thread&fdelp=$row[4]\">".
+    echo "<br><a href=\"".$_SERVER["PHP_SELF"]."?fthread=$thread&fdelp=$row[4]\">".
       "Delete</a>";
   }
 
@@ -177,10 +177,10 @@ EOF;
     $q .= "ORDER by d ASC";
   }
 
-  $result = mysql_query ($q, $db);
+  $result = mysqli_query ($db, $q );
   
-  if ($result && mysql_num_rows($result) > 0) {
-    while ($row = mysql_fetch_row($result)) {
+  if ($result && mysqli_num_rows($result) > 0) {
+    while ($row = mysqli_fetch_row($result)) {
       show_thread_post($fstyle, $row, $fthread,$authorized);
     }
   }   
@@ -195,12 +195,12 @@ function delete_thread ($thread_id, $gal_id, $authorized) {
   $q = "DELETE FROM politics WHERE id='$thread_id' AND gal_id='$gal_id' ".
      "AND (creator='$fcreator' OR '$Planetid'='$authorized')";
 
-  $result = mysql_query ($q, $db);
+  $result = mysqli_query ($db, $q );
 
-  if(mysql_affected_rows($db) == 1) {
+  if(mysqli_affected_rows($db) == 1) {
     $qp = "DELETE FROM poltext WHERE thread_id='$thread_id' ".
        "AND gal_id='$gal_id'";
-    $result = mysql_query ($qp, $db);
+    $result = mysqli_query ($db, $qp );
   }
 }
 
@@ -209,12 +209,12 @@ function delete_posting ($thread_id, $post_id, $gal_id, $authorized) {
 
   $q = "DELETE FROM poltext WHERE id='$post_id' AND thread_id='$thread_id' ".
      "AND (planet_id='$Planetid' OR '$Planetid'='$authorized')";
-  $result = mysql_query ($q, $db);
+  $result = mysqli_query ($db, $q );
 
-  if(mysql_affected_rows($db) == 1) {
+  if(mysqli_affected_rows($db) == 1) {
     $q = "UPDATE politics SET replies=replies-1 ".
        "WHERE poltext.id='$post_id' AND politics.id=poltext.thread_id";
-    $result = mysql_query ($q, $db);
+    $result = mysqli_query ($db, $q );
   }
 }
 
@@ -225,10 +225,10 @@ function check_valid ($thread_id, $gal_id) {
   $q ="SELECT subject FROM politics ".
      "WHERE gal_id='$gal_id' AND id='$thread_id' ";
 
-  $result = mysql_query ($q, $db);
+  $result = mysqli_query ($db, $q );
   
-  if ($result && mysql_num_rows($result) > 0) {
-    while ($row = mysql_fetch_row($result)) {
+  if ($result && mysqli_num_rows($result) > 0) {
+    while ($row = mysqli_fetch_row($result)) {
       $subject=$row[0];
     }
     return 1;
@@ -247,8 +247,8 @@ function forum_head_line ($fstyle, $fid) {
   }
   case 1: {
     $q = "SELECT name,x,y FROM galaxy WHERE id='$fid'";
-    $res = mysql_query ($q, $db);
-    $grow = mysql_fetch_array($res);
+    $res = mysqli_query ($db, $q );
+    $grow = mysqli_fetch_array($res);
     $ret = "Politics: $grow[name] ($grow[x]:$grow[y])";
     break;
   }
@@ -267,19 +267,19 @@ function forum_head_line ($fstyle, $fid) {
 }
 
 function forum_head ($fstyle, $fid, $fthread=0) {
-  global $subject, $PHP_SELF;
+  global $subject;
 
   if ($fthread==0) {
     $menu = post_ref($fstyle, "Create_Posting","create=1") .
-       "Create new thread</a>&nbsp;|&nbsp;<a href=\"$PHP_SELF\">Reload</a>";
+       "Create new thread</a>&nbsp;|&nbsp;<a href=\"$_SERVER[PHP_SELF]\">Reload</a>";
 
     $fline = "<th colspan=\"2\" align=\"center\" class=\"f$fstyle\">" . 
        forum_head_line ($fstyle, $fid) . "</th>";
   } else {
     $menu = post_ref($fstyle, "Create_Posting", "reply=$fthread") .
        "Post follow up</a>".
-       "&nbsp;|&nbsp;<a href=\"$PHP_SELF?fthread=$fthread\">Reload</a>".
-       "&nbsp;|&nbsp;<a href=\"$PHP_SELF\"?>Overview</a>";
+       "&nbsp;|&nbsp;<a href=\"".$_SERVER["PHP_SELF"]."?fthread=$fthread\">Reload</a>".
+       "&nbsp;|&nbsp;<a href=\"".$_SERVER["PHP_SELF"]."\"?>Overview</a>";
 
     $fline = "<td class=\"f$fstyle\"><b>Subject:</b> $subject</td>";
   }
@@ -314,14 +314,14 @@ function forum_init ($fstyle, $fid) {
     // politics - reset light
     $q ="UPDATE planet SET has_politics=$myrow[has_politics] & 0xfe ". 
         "WHERE id='$Planetid'";
-    $result = mysql_query ($q, $db);
+    $result = mysqli_query ($db, $q );
     $myrow["has_politics"] = $myrow["has_politics"] & 0xfe;
 
     $q = "SELECT moc FROM galaxy WHERE x='$myrow[x]' AND y='$myrow[y]'";
-    $result = mysql_query ($q, $db);
+    $result = mysqli_query ($db, $q );
 
-    if ($result && mysql_num_rows($result)>0) {
-      $row = mysql_fetch_row($result);
+    if ($result && mysqli_num_rows($result)>0) {
+      $row = mysqli_fetch_row($result);
       if ($row[0] == $Planetid)
         $authorized = $Planetid;
     }
@@ -329,23 +329,23 @@ function forum_init ($fstyle, $fid) {
     // politics - reset light
     $q ="UPDATE planet SET has_politics=$myrow[has_politics] & 0xfd ".
         "WHERE id='$Planetid'";
-    $result = mysql_query ($q, $db);
+    $result = mysqli_query ($db, $q );
     $myrow["has_politics"] = $myrow["has_politics"] & 0xfd;
 
     $q = "SELECT hc FROM alliance WHERE id=$myrow[alliance_id]";
-    $result = mysql_query ($q, $db);
+    $result = mysqli_query ($db, $q );
 
-    if ($result && mysql_num_rows($result)>0) {
-      $row = mysql_fetch_row($result);
+    if ($result && mysqli_num_rows($result)>0) {
+      $row = mysqli_fetch_row($result);
       if ($row[0] == $Planetid)
         $authorized = $Planetid;
     }
   } else if ($fstyle==3) {
     $q = "SELECT hcname,tag FROM alliance ".
          "WHERE alliance.id = $myrow[alliance_id]";
-    $result = mysql_query ($q, $db);
-    if ($result && mysql_num_rows($result)>0) {
-      $row = mysql_fetch_row($result);
+    $result = mysqli_query ($db, $q );
+    if ($result && mysqli_num_rows($result)>0) {
+      $row = mysqli_fetch_row($result);
       $fcreator = $row[0];
       $fcoords = "[$row[1]]";
     } else {
