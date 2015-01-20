@@ -1,0 +1,85 @@
+<?php
+
+/*
+ * MyPHPpa
+ * Copyright (C) 2003 Jens Beyer
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+$close_script="<SCRIPT LANGUAGE=\"text/javascript\">\n".
+"<!--\n".
+"// Begin\n".
+"function wclose() {".
+"  this.close();".
+"}\n// END\n//-->\n</SCRIPT>\n";
+
+
+if ($reply) {
+     $extra_header = "   <TITLE>Reply Message</TITLE>\n$close_script";
+} else if ($forward) {
+     $extra_header = "   <TITLE>Forward Message</TITLE>\n$close_script";
+} else if ($cluster) {
+  if ($gal) {
+    $extra_header = "   <TITLE>Galaxy Message</TITLE>\n$close_script";
+  } else {
+    $extra_header = "   <TITLE>Cluster Message</TITLE>\n$close_script";
+  }
+} else if ($hc) {
+  $extra_header = "   <TITLE>HC Alliance Message</TITLE>\n$close_script";
+} else if ($alc) {
+  $extra_header = "   <TITLE>Alliance Member Message</TITLE>\n$close_script";
+} else {
+     $extra_header = "   <TITLE>New Message</TITLE>\n$close_script";
+}
+require "standard_pop.php";
+
+if ($submit) {
+  require "post_func.inc";
+  check_post();
+}
+
+require "planet_util.php";
+
+if ($cluster) {
+  $q = "SELECT moc FROM galaxy WHERE x=$myrow[x] AND y=$myrow[y] AND moc=$Planetid";
+  $res = mysql_query ($q, $db);
+  if (mysql_num_rows($res) != 1 && $Planetid!=1) {
+    $gal=0;
+    $cluster=0;
+  }  
+}
+
+$msg = "";
+include "nreal_send_message.php";
+
+echo "<b>Messages</b>\n<br>\n<center>\n";
+
+if ($msg != "") {
+  echo $msg;
+} else {
+  echo "<br>";
+}
+
+send_message_form(500);
+?>
+
+<table width="500" border="0"><tr><td align="right">
+<a href="javascript:close()">Close this Window</a></td></tr></table>
+
+<?php
+
+require "footer.php";
+?>

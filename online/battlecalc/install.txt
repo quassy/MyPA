@@ -1,0 +1,45 @@
+/*
+ * install.txt, how-to install the Shoq Battlecalc v2.1b
+ * Original creator : Daan Broekhof (daan@parse.nl) aka Joror
+ */
+
+TAKE HEED OF THE FOLLOWING POINTS:
+- feel free to edit the code but keep a reference to the original maker,
+- minimally needed to run : php4.0pl2 or higher,
+- please inform me when you set up a server and want to mirror it for the general public,
+  it will posted on the main battlecalc page on shoq as a validated mirror,
+- if you can't copy'n'paste then I won't even try to help you install a battlecalc :),
+- pardon my codestyle, this was a project I started as one of my first PHP experiments,
+  and has been updated from that base *continuously* the last year ;),
+- respect the opensource inititive, respect the PA crew
+
+Now, to install:
+
+1- copy all files to a directory on your server using ftp or whatever
+2- Should be working now.. browse to your directory, if it's not working, look if your php
+   version is php4.0pl2 or higher,
+3- Edit the news.php file, put in your own news, main bug news will still be at
+   http://battlecalc.shoq.com, if you leave the news.php empty, no newsblock is shown
+4- Send me a mail (daan@parse.nl) informing me that you successfully installed the BC,
+   in that mail you can:
+   - Express your wish to get a mail when I put out a new BC version,
+   - Express your wish to be included in the mirror list,
+     (please include info on server whereabouts (ie continent) and speed/availability)
+   - Express your undying gratitude to me and make a sacrificial offering in my honor,
+     burning 10 bucks in paper money (or the equivalent in your country) in holy
+     attirement of the gift bestowed upon thee.
+
+5- (optional) Log functions :
+   For the somewhat more 'experienced' I've included a very basic logging system, to
+   switch it on you have to:
+   - Make the file 'logs.php' to world writable. [do : 'chmod 666 logs.php']
+   - well that's it really..
+   To check the stats out, just run 'logcount.php'. At the moment this file is *not*
+   protected with any password orso, to change that, edit the 'logcount.php' file and
+   change these line :
+     $username = "";  ==>  $username = "clarkkentis";
+     $password = "";  ==>  $username = "superman";
+   Or any other combo that strickes you fancy...
+
+
+   

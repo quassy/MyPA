@@ -1,0 +1,34 @@
+
+You will need a Unix machine (probably linux) to run this.
+
+I've run it on a MySQL-3 (You need to create a database there - 
+mine was named planetarion), and PHP-4.
+(NB: for mysql-4 you might need to convert some names)
+
+To edit:
+
+online/options.php  (especially dbname/login/pass)
+online/sendpass.php (fill in your email)
+ticker/myppa.cfg    (especially dbname/login/pass
+online/motd.php for message-of-the.day
+
+To create the database struct use paDump.sql, pipe it to mysql to the
+created db. 
+eg: mysql -u root -p planetarion  < test.sql
+
+You probably should edit the 'send_pass' to put in an email 
+account scanned by yourself, and edit the frontpage (index.php)
+for email and index_msg.inc for messages. 
+
+Same goes for all places with links to 'khan.stoney.cinetic.de'.
+
+The admin pw is per default admin, mod's pw is moderator, both set
+in last line of paDump.sql and ./online/admin/freset.php.
+
+Go to the directory ticker, read the README.
+
+If you want to provide stats to the users, edit ./scripts/dump_stat.sh
+according to your needs.
+
+Have fun, khan 
+myphpa@web.de
