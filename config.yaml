@@ -1,0 +1,58 @@
+database:
+  user: mypa
+  pass: defaultpassword
+  name: mypa
+
+  type: mysql
+  host: localhost
+  sock: /var/run/mysqld/mysqld.sock
+  port: 3306
+
+game:
+  name:    MyPA
+  version: 1.0.0-devel
+  round:   1
+  motd:    |
+    Have fun people!
+
+mail:
+  from:    mypa@localhost
+  replyto: mypa@localhost
+
+setup:
+  gameopen:   true
+  signupopen: true
+  havoc:      false
+
+  gal_size:          7
+  cluster_size:      7
+  universe_size:    15
+  score_per_roid: 1500
+
+  end_of_round: 39250 # still 7 hours to go, but disable sleep/signup
+  sleep_period:    23
+
+start:
+  roids:       3
+  metal:    5000
+  crystal:  5000
+  eonium:   5000
+  planet_m:  250
+  planet_c:  250
+  planet_e:  250
+
+  resource_min_per_roid: 150
+  resource_max_per_roid: 350
+  number_of_fleets:      4 # base + 3, has to be same as in ticker 
+
+normal:
+  high_prot:  0 # faktor nach oben
+  noob_prot:  3 # faktor nach unten
+  ticktime:  30 # needed for jscript
+
+havoc:
+  high_prot:  0
+  noob_prot: 20
+  ticktime:  15
+
+mysettings: 0 # default settings
