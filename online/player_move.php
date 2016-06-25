@@ -76,5 +76,3 @@ function insert_player ($id, $tx=0,$ty=0,$tz=0) {
 
   return $id;
 }
-
-?>

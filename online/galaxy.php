@@ -144,4 +144,3 @@ print_gal_report ($target_x, $target_y);
 echo "</table>\n</center>\n";
 
 require "footer.php";
-?>

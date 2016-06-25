@@ -38,19 +38,19 @@ if ($submit) {
     $q = "SELECT password FROM user WHERE login='$login' ".
        "AND email='$email'";
     $result = mysqli_query($q, $db);
-    
+
     if ($result && mysqli_num_rows($result) == 1) {
       $row = mysqli_fetch_row($result);
 
-      mail("$email", "$game password reminder", 
+      mail("$email", "$game password reminder",
 	   "\nLogin: $login\nPassword: $row[0]\n\nHave Fun!!\n",
 	   "From: MyPHPpa@web.de\nReply-To: MyPHPpa@web.de\nX-Mailer: PHP/" . phpversion());
-      
+
       echo "<br><center><b>The password has been mailed to you</b>";
       echo "<br><br><a href=\"index.php\" target=\"_top\">Login</a></center>";
       die;
     }
-  } 
+  }
 
   echo "<br><center><b>Login or Email not in database!</b></center>";
 }
@@ -65,7 +65,7 @@ if ($submit) {
 
 <table border=1>
 
-  
+
 <tr><td>
 <FORM method="post" action="<?php echo $_SERVER[PHP_SELF]?>">
 <TABLE width=400 border=0 cellpadding=4>
@@ -93,4 +93,3 @@ if ($submit) {
 
 <?php
 require_once "footer.php";
-?>

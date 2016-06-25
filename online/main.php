@@ -64,4 +64,3 @@ require "headerf.php";
 
 <?php
 require "footerf.php";
-?>

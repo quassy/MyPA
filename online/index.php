@@ -41,12 +41,12 @@ if ( !check_ip(get_ip()) ) {
   die;
 }
 
-$result = mysqli_query($db, "SELECT tick FROM general"); 
+$result = mysqli_query($db, "SELECT tick FROM general");
 $mtrow = mysqli_fetch_row($result);
 $mytick = $mtrow[0];
 
 if (ISSET($submit) && $login && $password) {
- 
+
   $result = mysqli_query($db, "SELECT user.planet_id, planet.mode, " .
                         "user.last + interval 5 minute < now(), ".
                         "user.last IS NOT NULL ".
@@ -102,8 +102,8 @@ if (ISSET($submit) && $login && $password) {
 	  echo "</form></center></body></html>";
           die;
         }
-      } 
-    } else if ($myrow[1] != 0  && $myrow[2] == 0 && $myrow[3] == 1 
+      }
+    } else if ($myrow[1] != 0  && $myrow[2] == 0 && $myrow[3] == 1
                && $mytick>0 && $myrow[0]>2) {
         // just logged out
         my_header("",0,0);
@@ -116,7 +116,7 @@ if (ISSET($submit) && $login && $password) {
         echo "You will have to wait up to 5 minutes to ".
              "<a href=\"/index.php\">login</a> again.";
         echo "</td></tr></table></center></body></html>";
-        die; 
+        die;
     } else if ($myrow[1] == 0) {
       $res = mysqli_query ($db, "SELECT data FROM logging ".
                           "WHERE class=2 and type=5 and planet_id='$myrow[0]'" );
@@ -151,10 +151,10 @@ if (ISSET($submit) && $login && $password) {
       $result = mysqli_query($db, "UPDATE user SET last=NOW(),login_date=NOW() ".
 			  "WHERE planet_id='$myrow[0]'" );
     }
-    do_log_id($myrow[0], 1, 1, get_ip()); 
-    do_log_id($myrow[0], 1, 2, get_type()); 
-    // event:login=1, class:login/out=1    
- 
+    do_log_id($myrow[0], 1, 1, get_ip());
+    do_log_id($myrow[0], 1, 2, get_type());
+    // event:login=1, class:login/out=1
+
     Header("Location: main.php");
     die;
   } else {
@@ -285,5 +285,3 @@ echo <<<EOF
 EOF;
 
 require "footer.php";
-
-?>

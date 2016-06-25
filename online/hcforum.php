@@ -70,4 +70,3 @@ if ($all && $all["hc"] == $Planetid && ($all["members"]>2 || $Planetid<2)) {
 }
 
 require "footer.inc";
-?>

@@ -80,5 +80,3 @@ function create_user ($pid) {
 
   
 }
-
-?>

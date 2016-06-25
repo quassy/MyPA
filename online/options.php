@@ -1,8 +1,9 @@
 <?php
 
 /*
- * MyPHPpa
+ * MyPA (continuation of MyPHPpa)
  * Copyright (C) 2003, 2007 Jens Beyer
+ * Copyright (C) 2016 quassy
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,36 +25,30 @@ function getmicrotime(){
   return ((float)$usec + (float)$sec);  
 }    
 
-import_request_variables ("GPC", "");
+// import_request_variables ("GPC", "");
+// @quassy: Work-around to get tings going, huge security hole!
+extract($_REQUEST, EXTR_PREFIX_ALL|EXTR_REFS, '');
 
 $start_time = getmicrotime();
 
-// $dbsock = "/tmp/mysql.sock";
-// $dbuser = "mysql";
+$dbuser = 'mypa';
+$dbpass = 'defaultpassword';
+$dbname = 'mypa';
 
-$dbsock = "/var/run/mysql/mysql.sock";
-$dbuser = "root";
-
+$dbsock = "/var/run/mysqld/mysqld.sock";
 $dbhost = "localhost";
-# $dbhost = "192.168.0.6";
 $dbport = "3306";
-$dbpass = "passw";
-$dbname = "planetarion";
 
-$version = "0.8.16";
-$game = "MyPHPpa";
-$round = "round 01"; // used as hash against multi 
+$version = "1.0.0-devel";
+$game = "MyPa";
+$round = "round 01"; // used as hash against multi
 
-$game_closed = 0;
+$game_closed = 0; // should become boolean?
 $signupclosed = 0;
 $havoc = 0;
 
-// $game_closed = 1;
-// $signupclosed = 1;
-// $havoc = 1;
-
 $gal_size = 7;
-$cluster_size = 7; 
+$cluster_size = 7;
 $universe_size = 15;
 
 $score_per_roid=1500;
@@ -84,6 +79,3 @@ if ($havoc == 1) {
 
 // default settings
 $mysettings=0;
-
-
-?>

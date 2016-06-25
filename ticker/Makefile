@@ -44,11 +44,11 @@ sql:	test_sql.o core_sql.o
 tick_sleep: tick_sleep.o
 	gcc -O -g tick_sleep.o -o tick_sleep
 
-update:	
+update:
 	cp ticker ticker.old
 	cp ticker.test ticker
 
-clean:	
+clean:
 	rm -f *.o ticker *~ tick_sleep
 
 $(OBJ): ticker.h logging.h

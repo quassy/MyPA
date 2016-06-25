@@ -44,4 +44,3 @@ require_once "headerf.php";
 
 <?php
 require "footerf.php";
-?>

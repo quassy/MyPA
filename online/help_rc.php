@@ -120,4 +120,3 @@ To Scan new Asteroids you have to research till
 
 <?php
 require "footer.php";
-?>

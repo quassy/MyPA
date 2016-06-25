@@ -22,4 +22,3 @@
 $post_type = 3;
 
 include "post.inc";
-?>

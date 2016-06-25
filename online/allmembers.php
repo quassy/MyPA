@@ -60,4 +60,3 @@ if (!$all || $myrow["alliance_id"] == 0) {
 
 <?php
 require "footer.php";
-?>

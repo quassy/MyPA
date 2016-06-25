@@ -32,5 +32,3 @@ function titlebox ($title, $msg="") {
       "</center><br>";
   }
 }
-
-?>

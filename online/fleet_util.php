@@ -103,5 +103,3 @@ function fetch_fleet_sum ($fleet_id)
   }
 
 }
-
-?>

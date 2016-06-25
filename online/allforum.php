@@ -71,4 +71,3 @@ if ($all) {
 }
 
 require "footer.inc";
-?>

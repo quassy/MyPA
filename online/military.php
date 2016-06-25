@@ -831,4 +831,3 @@ EOF;
 
 <?php
 require "footer.php";
-?>

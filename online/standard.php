@@ -52,5 +52,3 @@ mysqli_query($db, "UPDATE user set last=NOW(),last_tick='$mytick',".
 	     "WHERE planet_id='$Planetid'"); 
 
 require "msgbox.php";
-
-?>

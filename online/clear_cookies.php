@@ -28,5 +28,3 @@ echo<<<EOF
 <html><body>
 Cookies cleared</body></html>
 EOF;
-
-?>

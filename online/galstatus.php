@@ -239,4 +239,3 @@ print_outgoing ($myrow["x"], $myrow["y"]);
 
 <?php
 require "footer.php";
-?>

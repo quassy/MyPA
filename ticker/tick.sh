@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # MyPHPpa ticker
 # Copyright (C) 2003, 2007 Jens Beyer
@@ -20,7 +20,7 @@
 
 trap clean_up EXIT SIGTERM SIGKILL SIGABRT
 
-function clean_up() {
+function clean_up {
 
   echo "Quiting through clean_up"
   rm /tmp/tick*
@@ -42,7 +42,7 @@ touch /tmp/ticker.run.timer
 
 while [ 1 ]; do
   echo "*** "`date`" ***"
-  ./ticker mypa.cfg
+  ./ticker.o mypa.cfg
   echo "*sleeping $sleep"
-  ./tick_sleep $tick /tmp/ticker.run.timer
+  #./tick_sleep.o $tick /tmp/ticker.run.timer
 done

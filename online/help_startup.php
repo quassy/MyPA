@@ -106,4 +106,3 @@ other const/res are more important.<br>
 
 <?php
 require "footer.php";
-?>

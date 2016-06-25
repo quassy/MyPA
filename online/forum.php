@@ -51,4 +51,3 @@ if (ISSET($fthread)) {
 }
 
 require "footer.inc";
-?>

@@ -75,4 +75,3 @@ universe.
 
 <?php
 require "footer.php";
-?>

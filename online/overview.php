@@ -352,4 +352,3 @@ echo "<td width=\"25%\">Uninitiated</td><td width=\"15%\" align=\"right\">".
 echo "</table>\n</center>\n";
 
 require "footer.php";
-?>

@@ -29,4 +29,3 @@ titlebox("Population");
 echo "to be defined";
 
 require "footer.php";
-?>

@@ -349,5 +349,3 @@ echo <<<EOF
 EOF;
 
 require "footer.php";
-
-?>

@@ -258,5 +258,3 @@ if (ISSET($submit)) {
     }
   }
 }
-
-?>
