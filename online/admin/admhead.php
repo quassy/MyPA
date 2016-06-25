@@ -43,6 +43,4 @@ if (ISSET($extra_header)) {
 
 mysqli_query($db, "UPDATE user set last=NOW(),last_tick='$mytick'".
 	     "ip='$_SERVER[REMOTE_ADDR]' ".
-	     "WHERE planet_id='$Planetid'"); 
-
-?>
+	     "WHERE planet_id='$Planetid'");

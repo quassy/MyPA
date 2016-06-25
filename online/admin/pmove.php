@@ -77,5 +77,3 @@ if ($submit) {
 </center>
 <?php
 }
-?>
-

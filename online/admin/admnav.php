@@ -121,4 +121,3 @@ if ($Planetid==1) {
     }
 echo "</center></body>";
 require_once "../footerf.php";
-?>

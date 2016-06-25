@@ -44,4 +44,3 @@ echo "</table></center>\n";
 echo "No Fixes...<br>";
 
 require_once "../footer.php";
-?>

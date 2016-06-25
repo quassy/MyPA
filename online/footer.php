@@ -21,7 +21,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-$end_time = getmicrotime();
+$end_time = microtime(true);
 $diff_time = $end_time - $start_time ;
 if ( $Planetid == 1 ) {
   echo "Runtime: ". number_format($diff_time, 3) ." s<br>";

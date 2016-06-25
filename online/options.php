@@ -2,8 +2,8 @@
 
 /*
  * MyPA (continuation of MyPHPpa)
- * Copyright (C) 2003, 2007 Jens Beyer
- * Copyright (C) 2016 quassy
+ * Copyright (c) 2003, 2007 Jens Beyer
+ * Copyright (c) 2016 quassy
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,16 +20,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-function getmicrotime(){
-  list($usec, $sec) = explode(" ",microtime());  
-  return ((float)$usec + (float)$sec);  
-}    
-
 // import_request_variables ("GPC", "");
 // @quassy: Work-around to get tings going, huge security hole!
 extract($_REQUEST, EXTR_PREFIX_ALL|EXTR_REFS, '');
 
-$start_time = getmicrotime();
+$start_time = $_SERVER["REQUEST_TIME_FLOAT"];
 
 $dbuser = 'mypa';
 $dbpass = 'defaultpassword';

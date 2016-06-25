@@ -576,7 +576,7 @@ function rtime () {
 
   if ($Planetid != 1) return;
 
-  $end_time = getmicrotime();
+  $end_time = microtime(true);
   $diff_time = $end_time - $start_time ;
   echo "Runtime: ". number_format($diff_time, 3) ." s<br>";
 }

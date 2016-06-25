@@ -54,4 +54,3 @@ Expand Universe
 expand_universe();
 
 require_once "../footer.php";
-?>

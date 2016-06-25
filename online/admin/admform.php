@@ -56,5 +56,3 @@ function submit_values($id, $values, $table) {
       "($name) failed</font><br><br>\n";
   }
 }
-
-?>

@@ -24,7 +24,7 @@ require_once "admform.php";
 
 function t() {
   global $start_time;
-  $end_time = getmicrotime();
+  $end_time = microtime(true);
   $diff_time = $end_time - $start_time ;
   echo "[". number_format($diff_time, 3) ." s]";
    $start_time = $end_time;
@@ -44,4 +44,3 @@ while ($row=mysqli_fetch_row($res)) {
 echo "";
 
 require_once "../footer.php";
-?>

@@ -216,5 +216,3 @@ if ($id <0) {
 
 <?php
 require_once "../footer.php";
-?>
-

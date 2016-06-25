@@ -66,4 +66,3 @@ $row = mysqli_fetch_row($res);
 echo "logging: $row[0] entries<br>";
 
 require_once "../footer.php";
-?>

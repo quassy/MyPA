@@ -32,5 +32,3 @@ $extra_header = "   <TITLE>$game $version</TITLE>\n\n".
 "  window_options += \",left=\" + (screen.width - _width)/2;\n".
 "  var OpenWin = open(_page, _name, window_options);\n".
 "}\n// END\n//-->\n</SCRIPT>";
-
-?>

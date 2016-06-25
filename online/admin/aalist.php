@@ -45,4 +45,3 @@ if ($allid && $Planetid<=2) {
 echo "</center>\n";
 
 require_once "../footer.php";
-?>

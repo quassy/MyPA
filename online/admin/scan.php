@@ -89,4 +89,3 @@ admin_form_field ("textarea","description",3,3,40,1);
 
 <?php
 require_once "../footer.php";
-?>

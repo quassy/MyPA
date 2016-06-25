@@ -99,4 +99,3 @@ if($Planetid==1) {
 }
 
 require_once "../footer.php";
-?>

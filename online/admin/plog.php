@@ -283,4 +283,3 @@ if ((ISSET($id) && $id>0) ||
 
 <?php
 require_once "../footer.php";
-?>

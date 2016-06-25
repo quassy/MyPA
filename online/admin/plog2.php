@@ -248,4 +248,3 @@ if ($id != 0 || ($data!="" && $submit==1)) {
 
 <?php
 require_once "../footer.php";
-?>

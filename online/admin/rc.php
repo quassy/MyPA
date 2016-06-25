@@ -90,4 +90,3 @@ admin_form_field ("text","type",4,1);
 
 <?php
 require_once "../footer.php";
-?>

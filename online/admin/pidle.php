@@ -60,4 +60,3 @@ idle_players();
 echo "</table>\n";
 
 require_once "../footer.php";
-?>

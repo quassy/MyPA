@@ -101,4 +101,3 @@ if ($res && mysqli_num_rows($res)>0) {
 }
 
 require_once "../footer.php";
-?>

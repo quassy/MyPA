@@ -27,5 +27,3 @@
 </center>
 <br>
 <br>
-<?php
-// echo "</center>";

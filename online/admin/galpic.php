@@ -43,4 +43,3 @@ if (ISSET($rid)) {
   }
 
 require_once "../footer.php";
-?>

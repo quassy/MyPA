@@ -82,4 +82,3 @@ EOF;
 echo "</center>\n";
 
 require_once "../footer.php";
-?>

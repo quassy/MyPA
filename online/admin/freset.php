@@ -150,4 +150,3 @@ You will have to signup again after this</th></tr>
 }
 
 require_once "../footer.php";
-?>

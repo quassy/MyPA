@@ -96,4 +96,3 @@ if ($result && mysqli_num_rows($result) > 0) {
 
 <?php
 require_once "../footer.php";
-?>

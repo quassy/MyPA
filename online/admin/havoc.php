@@ -88,4 +88,3 @@ echo "Updated score.<br>";
 }
 
 require_once "../footer.php";
-?>
