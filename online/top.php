@@ -133,4 +133,3 @@ function top_header($myrow) {
 
   echo "</TABLE></center>\n";
 }
-?>

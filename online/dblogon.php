@@ -25,5 +25,3 @@ $db = mysqli_connect ($dbhost, $dbuser, $dbpass, $dbname, $dbport, $dbsock)
 mysqli_select_db($db, $dbname);
 
 /* fixme, get current tick */
-
-?>

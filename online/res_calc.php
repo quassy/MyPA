@@ -77,5 +77,3 @@ function get_planet_income () {
 
   return ($income);
 }
-
-?>

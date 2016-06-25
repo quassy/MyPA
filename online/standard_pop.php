@@ -31,7 +31,7 @@ require "dblogon.php";
 
 db_auth($db,$Username,$Password,$Planetid);
 
-$result = mysqli_query($db, "SELECT tick FROM general"); 
+$result = mysqli_query($db, "SELECT tick FROM general");
 $row = mysqli_fetch_row($result);
 $mytick = $row[0];
 
@@ -47,6 +47,4 @@ $myrow = mysqli_fetch_array($result);
 
 mysqli_query($db, "UPDATE user set last=NOW(),last_tick='$mytick',".
 	     "ip='$player_ip' ".
-	     "WHERE planet_id='$Planetid'"); 
-
-?>
+	     "WHERE planet_id='$Planetid'");

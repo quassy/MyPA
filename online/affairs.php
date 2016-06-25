@@ -493,4 +493,3 @@ EOF;
 echo "\n</center>\n";
 
 require "footer.php";
-?>

@@ -34,4 +34,3 @@ function check_ip($ip) {
   return 1;
 }
 
-?>

@@ -37,4 +37,3 @@ list_alliances();
 
 <?php
 require "footer.php";
-?>

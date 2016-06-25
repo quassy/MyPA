@@ -48,5 +48,3 @@ Please try to <a href="index.php" target="_top">Login</a> again<br>
 <?php
 
 require "footer.php";
-
-?>

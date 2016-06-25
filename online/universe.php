@@ -121,4 +121,3 @@ EOF;
 }
 
 require "footer.php";
-?>

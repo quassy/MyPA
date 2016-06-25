@@ -31,6 +31,41 @@ extract($_REQUEST, EXTR_PREFIX_ALL|EXTR_REFS, '');
 
 $start_time = getmicrotime();
 
+class Config
+{
+    private $database = {
+        'type': 'mysql',
+        'host': 'localhost',
+        'sock': '/var/run/mysqld/mysqld.sock',
+        'port': 3306,
+
+        'user'; 'mypa',
+        'pass': 'defaultpassword',
+        'name': 'mypa'
+    };
+    private $game = {
+        'name': 'MyPA',
+        'version': '1.0.0-devel',
+        'round': 1
+    }
+
+    public function dbConnect ()
+    {
+        try {
+            $db = new PDO(
+                'mysql:host='.$self->database['host'].';dbname='.$self->database['name'],
+                $self->database['user'],
+                $self->database['pass'])
+                or die (_('Error establishing database connection');
+            $db->query("SET NAMES 'utf8';")
+                or die (_('Error setting database encoding');
+        } catch (PDOException $e) {
+            die ($e->getMessage());
+        }
+        return $db;
+    }
+}
+
 $dbuser = 'mypa';
 $dbpass = 'defaultpassword';
 $dbname = 'mypa';
@@ -43,7 +78,7 @@ $version = "1.0.0-devel";
 $game = "MyPa";
 $round = "round 01"; // used as hash against multi
 
-$game_closed = 0; // should become boolean?
+$game_closed = 0; // should be boolean?
 $signupclosed = 0;
 $havoc = 0;
 

@@ -101,4 +101,3 @@ EOF;
     echo "</head>\n<body class=\"a\">\n";
   }
 }
-?>

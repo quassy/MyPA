@@ -169,4 +169,3 @@ EOF;
 </center>
 <?php
 require "footer.php";
-?>

@@ -166,4 +166,3 @@ echo "</table>\n";
 }
 
 require "footer.php";
-?>

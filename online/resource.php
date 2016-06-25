@@ -431,4 +431,3 @@ EOF;
 }
 
 require "footer.php";
-?>

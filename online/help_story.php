@@ -407,4 +407,3 @@ turned to speak to Endrin he smiled to himself.
 
 <?php
 require "footer.php";
-?>

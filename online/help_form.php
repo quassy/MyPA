@@ -190,4 +190,3 @@ If you want to go in depth on this have a look at the
 
 <?php
 require "footer.php";
-?>

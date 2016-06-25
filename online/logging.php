@@ -32,5 +32,3 @@ function do_log_me ($class, $event, $data) {
  $r=mysqli_query ($db, "INSERT INTO logging SET planet_id='$Planetid',".
 	"stamp=NOW(),type='$event', class='$class', data='$data'" );
 }
-
-?>

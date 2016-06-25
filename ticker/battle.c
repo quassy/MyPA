@@ -26,10 +26,6 @@
 #include "ticker.h"
 #include "battle.h"
 
-/* 
- * #define DEBUG_BATTLE
- * #define DEBUG_CAP
- */
 #define DEBUG_BATTLE
 #define DEBUG_CAP
 
@@ -44,7 +40,7 @@ unit_class **uc_rid;
 /*
  * Tabelle aller Einheiten
  */
-unit_class * get_unit_class (MYSQL *mysql) 
+unit_class * get_unit_class (MYSQL *mysql)
 {
   MYSQL_RES *res;
   MYSQL_ROW row;
@@ -97,7 +93,7 @@ unit_class * get_unit_class (MYSQL *mysql)
     uc_rid[luc->id] = luc;
 
 #ifdef DEBUG_EXTREME
-    fprintf (logfile, "[%d]: %s (%d, %d, %d...)\n", 
+    fprintf (logfile, "[%d]: %s (%d, %d, %d...)\n",
              luc->id, luc->name, luc->type, luc->class, luc->init);
       fflush(logfile);
 #endif
@@ -115,7 +111,7 @@ unit_class * get_unit_class (MYSQL *mysql)
 /*
  * Hilfsroutinen
  */
-void free_fleet (fleet *f, int flag) 
+void free_fleet (fleet *f, int flag)
 {
   if (f) {
     free (f->res);
@@ -183,7 +179,7 @@ planet *malloc_planet (planet *p, unsigned int size)
     malloc_fleet(r->f+i, size);
 
   r->lost = (resource *) calloc (1, sizeof(resource));
-      
+
   return r;
 }
 
@@ -195,11 +191,11 @@ void calc_fleetpoints ( fleet *f )
     f->res->crystal += f->units[i].num * f->units[i].u->crystal;
     f->res->eonium += f->units[i].num * f->units[i].u->eonium;
   }
-  f->res->total = f->res->metal + f->res->crystal 
+  f->res->total = f->res->metal + f->res->crystal
     + f->res->eonium;
 }
 
-/* 
+/*
  * Alle einheiten des angegriffenen Planeten
  */
 planet *make_planet_defense (MYSQL *mysql, unsigned int planet_id)
@@ -234,7 +230,7 @@ planet *make_planet_defense (MYSQL *mysql, unsigned int planet_id)
 
   fleet  *f = NULL;
   planet *p = NULL;
-  
+
   debug (4, "make_planet_defense");
 
   sprintf (query, query_fmt, planet_id);
@@ -253,7 +249,7 @@ planet *make_planet_defense (MYSQL *mysql, unsigned int planet_id)
       id = atoi(row[1]);
       fn = atoi(row[3]);
       fleet_id = atoi(row[4]);
-    
+
       n = p->f[fn].num_units++;
 
       /* clean up units */
@@ -294,7 +290,7 @@ planet *make_planet_defense (MYSQL *mysql, unsigned int planet_id)
     check_error (mysql);
     mysql_free_result(res);
   }
-  
+
   /* count roids and score */
   sprintf (query, score_fmt, planet_id);
   res = do_query (mysql, query);
@@ -313,7 +309,7 @@ planet *make_planet_defense (MYSQL *mysql, unsigned int planet_id)
   }
   check_error (mysql);
   mysql_free_result(res);
-  
+
   /* gather total fleet */
 
   p->total_fleet = f = malloc_fleet (NULL, num_unit+num_pds);
@@ -354,7 +350,7 @@ planet *make_planet_defense (MYSQL *mysql, unsigned int planet_id)
 /*
  * get att/def fleet sent by planet_id to target_id
  */
-planet *make_planet_fleet (MYSQL *mysql, int type, unsigned int planet_id, 
+planet *make_planet_fleet (MYSQL *mysql, int type, unsigned int planet_id,
 			   unsigned int target_id)
 {
   static char query_fmt[] = "SELECT sum(units.num), units.unit_id, " \
@@ -368,7 +364,7 @@ planet *make_planet_fleet (MYSQL *mysql, int type, unsigned int planet_id,
   /* clean up code */
   static char del_fmt[] = "DELETE FROM units WHERE id=%d AND unit_id=%d";
   static char ins_fmt[] = "INSERT INTO units SET id=%d,num=%d,unit_id=%d";
-  
+
   MYSQL_RES *res;
   MYSQL_ROW row;
 
@@ -394,7 +390,7 @@ planet *make_planet_fleet (MYSQL *mysql, int type, unsigned int planet_id,
       p->cap_roids[j] = 0;
       p->roids[j] = 0;
     }
-    p->cap_roids[4] = 0; /* holds sum */ 
+    p->cap_roids[4] = 0; /* holds sum */
 
     while ((row = mysql_fetch_row (res))) {
       num = atoi(row[0]);
@@ -420,7 +416,7 @@ planet *make_planet_fleet (MYSQL *mysql, int type, unsigned int planet_id,
     /* gather total fleet */
 
     p->total_fleet = f = malloc_fleet (NULL, num_unit);
-    
+
     for (i=0; i<MAX_FLEETS; i++)
       for (j=0; j<p->f[i].num_units; j++) {
 
@@ -451,7 +447,7 @@ planet *make_planet_fleet (MYSQL *mysql, int type, unsigned int planet_id,
 /*
    * get total fleet of attacking and defending forces
    */
-fleet * make_fleet (MYSQL *mysql, int type, unsigned int target_id, 
+fleet * make_fleet (MYSQL *mysql, int type, unsigned int target_id,
 		    planet ***p_ptr, planet **target_planet)
 {
   MYSQL_RES *res;
@@ -468,7 +464,7 @@ fleet * make_fleet (MYSQL *mysql, int type, unsigned int target_id,
     "GROUP BY fleet.planet_id";
 
   debug (3, "make_fleet");
- 
+
   sprintf (query, query_fmt, target_id, type);
   res = do_query (mysql, query);
 
@@ -476,15 +472,15 @@ fleet * make_fleet (MYSQL *mysql, int type, unsigned int target_id,
 
     if (!type) num_planets++;
     p = (planet **) calloc (num_planets+1, sizeof(planet *));
-    
+
     assert(p);
 
     while ((row = mysql_fetch_row(res))) {
       // collect planet forces
-      p[i++] = make_planet_fleet (mysql, type, (unsigned int) atoi(row[0]), 
+      p[i++] = make_planet_fleet (mysql, type, (unsigned int) atoi(row[0]),
 				  target_id);
     }
-    
+
   } else {
     if ( !type ) {
       /* attacked planet only */
@@ -511,7 +507,7 @@ fleet * make_fleet (MYSQL *mysql, int type, unsigned int target_id,
     for (i=0; i<num_planets; i++) {
 
       if (!p[i]->total_fleet) {
-	fprintf (logfile, "should never happen ? - no fleet for id [%d]\n", 
+	fprintf (logfile, "should never happen ? - no fleet for id [%d]\n",
 		 p[i]->planet_id);
         fflush(logfile);
       } else {
@@ -543,14 +539,14 @@ fleet * make_fleet (MYSQL *mysql, int type, unsigned int target_id,
 
   *p_ptr = p;
   return f;
-  
+
 }
 
-/* 
- * Last part of battlecode 
+/*
+ * Last part of battlecode
  * Hit resolution
  */
-unsigned int resolve_avg_shots (unsigned int firing, 
+unsigned int resolve_avg_shots (unsigned int firing,
 				unit_class * att, unit* def)
 {
   if (!firing) return 0;
@@ -576,7 +572,7 @@ unsigned int resolve_avg_shots (unsigned int firing,
 
       if (to_stun_all < firing) {
 	def->to_be_stunned += def->targeted;
-	
+
 	return to_stun_all;
       } else {
 	unsigned int diff;
@@ -600,7 +596,7 @@ unsigned int resolve_avg_shots (unsigned int firing,
 
       hit_chance = (25. + att->weapon_speed - def->u->agility)/100.;
 #ifdef DEBUG_BATTLE
-      fprintf(logfile, 
+      fprintf(logfile,
 	      "              --res att: hit: %f (%d  /  %d)\n",
 	      hit_chance, att->weapon_speed,def->u->agility);
       fflush(logfile);
@@ -617,29 +613,29 @@ unsigned int resolve_avg_shots (unsigned int firing,
 	return firing;
       }
 #ifdef DEBUG_BATTLE
-      fprintf(logfile, 
+      fprintf(logfile,
 	      "              --res att: f: %d (%f) htko %d tko %d tka %d\n",
 	      firing, hit_chance, hits_to_kill_one, to_kill_one, to_kill_all);
       fflush(logfile);
 #endif
 
       if (to_kill_all  < firing) {
-      
+
 	def->to_be_killed += def->targeted;
 
 	return to_kill_all;
       } else if ( to_kill_first > firing) {
-      
+
 	def->hits += floor (firing * att->power * hit_chance);
 
 	return firing;
       } else {
 	unsigned int diff;
-	
+
 	diff = 1 + floor ((firing - to_kill_first) / ((float)to_kill_one));
 	def->to_be_killed += diff;
-	
-	if ( att->power * ( (firing - to_kill_first) % to_kill_one) 
+
+	if ( att->power * ( (firing - to_kill_first) % to_kill_one)
 	     < def->u->armor)
 	  def->hits = att->power * ( (firing - to_kill_first) % to_kill_one);
 	else
@@ -661,7 +657,7 @@ unsigned int resolve_avg_shots (unsigned int firing,
 /*
  * Divide firepower between equivalent targets
  */
-int attack_targets (unit_class *att, 
+int attack_targets (unit_class *att,
 		    fleet *def_fleet,
 		    unsigned int current_target_type,
 		    unsigned int *guns_left)
@@ -682,25 +678,25 @@ int attack_targets (unit_class *att,
     def = def_fleet->units+i;
 
     def->targeted = 0;
-    if ( def->u->type == current_target_type 
+    if ( def->u->type == current_target_type
 	|| current_target_type == 255) {
 
-      switch (att->class) 
+      switch (att->class)
 	{
 	case CLASS_EMP:
 	  /* don't emp PDS */
-	  if ( 0 < (def->num - def->killed - def->stunned 
+	  if ( 0 < (def->num - def->killed - def->stunned
 		    - def->to_be_stunned - def->capping) &&
 	       def->u->resistance != 100) {
-	    def->targeted = def->num - def->killed  - def->stunned 
+	    def->targeted = def->num - def->killed  - def->stunned
 	      - def->to_be_stunned;
 	    num_targets += def->targeted;
 
 #ifdef DEBUG_BATTLE
 	    fprintf (logfile, "              EMP: target %d "\
-		     "(num: %d k: %d s: %d tbs: %d\n", 
+		     "(num: %d k: %d s: %d tbs: %d\n",
 		     def->targeted, num_targets,
-		     def->killed, def->stunned, def->to_be_stunned); 
+		     def->killed, def->stunned, def->to_be_stunned);
       fflush(logfile);
 #endif
 	  }
@@ -711,18 +707,18 @@ int attack_targets (unit_class *att,
       fflush(logfile);
 	  break;
 
-        case CLASS_MISSILE: 
+        case CLASS_MISSILE:
           if ( def->u->class == CLASS_PDS &&
                0 < (def->num - def->killed - def->to_be_killed - def->capping)) {
-            def->targeted = def->num - def->killed 
+            def->targeted = def->num - def->killed
                             - def->to_be_killed - def->capping;
             num_targets += def->targeted;
 
 #ifdef DEBUG_BATTLE
             fprintf (logfile, "         MISS ATT: target %d "\
-                              "(num: %d k: %d s: %d tbs: %d\n", 
+                              "(num: %d k: %d s: %d tbs: %d\n",
                               def->targeted, num_targets,
-                              def->killed, def->stunned, def->to_be_stunned); 
+                              def->killed, def->stunned, def->to_be_stunned);
       fflush(logfile);
 #endif
           }
@@ -730,26 +726,26 @@ int attack_targets (unit_class *att,
 
 	default:
 	  if ( 0 < (def->num - def->killed - def->to_be_killed - def->capping)) {
-	    def->targeted = def->num - def->killed 
+	    def->targeted = def->num - def->killed
 	      - def->to_be_killed - def->capping;
 	    num_targets += def->targeted;
 
 #ifdef DEBUG_BATTLE
 	    fprintf (logfile, "              ATT: target %d "\
-		     "(num: %d k: %d s: %d tbs: %d\n", 
+		     "(num: %d k: %d s: %d tbs: %d\n",
 		     def->targeted, num_targets,
-		     def->killed, def->stunned, def->to_be_stunned); 
+		     def->killed, def->stunned, def->to_be_stunned);
       fflush(logfile);
 #endif
 	  }
 	  break;
-	}      
+	}
     }
   }
 
-  if (!num_targets) 
+  if (!num_targets)
     return 1;
-  
+
   for (i=0; i< def_fleet->num_units; i++) {
     def = def_fleet->units+i;
 
@@ -778,12 +774,12 @@ int attack_targets (unit_class *att,
  * select targets by init
  * handles battle cap
  */
-void act_initiative (unit *cur, fleet *def, 
-		     planet *target_p, 
-		     unsigned long long networth, unsigned long long att_score) 
+void act_initiative (unit *cur, fleet *def,
+		     planet *target_p,
+		     unsigned long long networth, unsigned long long att_score)
 {
   int survivor;
-  
+
   survivor = cur->num - cur->killed - cur->stunned - cur->capping;
 
   if ( survivor > 0) {
@@ -793,7 +789,7 @@ void act_initiative (unit *cur, fleet *def,
     guns_left = survivor * cur->u->guns;
 
 #ifdef DEBUG_BATTLE
-    fprintf (logfile, 
+    fprintf (logfile,
 	     "[%d] act_init (%d/%d/%d) guns: %d, survivor: %d, (%s: guns %d)\n",
 	     cur->u->init, cur->num, cur->killed, cur->stunned,
 	     guns_left, survivor, cur->u->name, cur->u->guns);
@@ -803,7 +799,7 @@ void act_initiative (unit *cur, fleet *def,
     if (cur->u->class == CLASS_CAP) {
       /* extra case for 'spezial' */
       debug (4, "act_initiative CLASS_CAP");
-      
+
       /* if def do nothing */
       if (target_p != NULL ) {
 
@@ -813,13 +809,13 @@ void act_initiative (unit *cur, fleet *def,
 
 	/* if attack capture roids */
 	oroid_chance = (target_p->planet_score / ((double) networth ));
-	roid_chance = (target_p->planet_score / 
+	roid_chance = (target_p->planet_score /
 		       ((double) networth + 2*att_score) );
 
 #ifdef DEBUG_CAP
-	fprintf (logfile, "CAP ----- New: %2.2f, old %2.2f\n", 
+	fprintf (logfile, "CAP ----- New: %2.2f, old %2.2f\n",
 		 roid_chance, oroid_chance);
-	fprintf (logfile, "CAP ----- Pscore: %llu\tFleet: %llu\tAscore: %llu\n", 
+	fprintf (logfile, "CAP ----- Pscore: %llu\tFleet: %llu\tAscore: %llu\n",
 		 target_p->planet_score, networth, att_score);
                  fflush(logfile);
 #endif
@@ -839,7 +835,7 @@ void act_initiative (unit *cur, fleet *def,
 
 	    max_grab_total += max_grab[i];
 
-	    fprintf (logfile, "grabbing type %d: %d -> %d total\n", 
+	    fprintf (logfile, "grabbing type %d: %d -> %d total\n",
 		     i, max_grab[i], max_grab_total);
             fflush(logfile);
 	  } else {
@@ -849,9 +845,9 @@ void act_initiative (unit *cur, fleet *def,
 	}
 
 	fprintf (logfile, "CAP [pid: %d] pods %d roidmax %d chance %f\n",
-		 target_p->planet_id, 
+		 target_p->planet_id,
 		 survivor,
-		 max_grab_total, 
+		 max_grab_total,
 		 roid_chance);
         fflush(logfile);
 
@@ -879,12 +875,12 @@ void act_initiative (unit *cur, fleet *def,
 
 	  for (i=0; i<4; i++) {
 	    int dif = rint (capped * max_grab[i]);
-/* if (dif+target_p->cap_roids[4] > capped) dif--; */ 
+/* if (dif+target_p->cap_roids[4] > capped) dif--; */
 	    if (dif < 0) dif = 0;
 	    target_p->cap_roids[i] += dif;
 	    target_p->cap_roids[4] += dif;
 
-	    fprintf (logfile, "now: [%d] %d / %d total %d\n", 
+	    fprintf (logfile, "now: [%d] %d / %d total %d\n",
 		     i, target_p->cap_roids[i], dif, target_p->cap_roids[4]);
             fflush(logfile);
 	  }
@@ -900,7 +896,7 @@ void act_initiative (unit *cur, fleet *def,
 		dif--;
 		target_p->cap_roids[i] ++;
 		target_p->cap_roids[4] ++;
-		fprintf (logfile, "fix: [%d] %d (%d) total %d\n", 
+		fprintf (logfile, "fix: [%d] %d (%d) total %d\n",
 			 i, target_p->cap_roids[i], dif, target_p->cap_roids[4]);
       fflush(logfile);
 	      }
@@ -955,19 +951,19 @@ void act_initiative (unit *cur, fleet *def,
   }
 }
 
-void clean_up_attack (fleet *f) 
+void clean_up_attack (fleet *f)
 {
   int i;
 
   debug (6, "clean_up_attack");
 
   for (i=0; i<f->num_units; i++) {
-    if (f->units[i].num && 
+    if (f->units[i].num &&
 	(f->units[i].to_be_killed || f->units[i].to_be_stunned)) {
 
 #ifdef DEBUG_BATTLE
       fprintf( logfile, "[%s %d] num %d, tbk %d (%d)  tbs %d (%d)\n",
-	       f->units[i].u->name, i, f->units[i].num, 
+	       f->units[i].u->name, i, f->units[i].num,
 	       f->units[i].to_be_killed, f->units[i].killed,
 	       f->units[i].to_be_stunned, f->units[i].stunned);
       fflush(logfile);
@@ -979,7 +975,7 @@ void clean_up_attack (fleet *f)
       /* rounding errors */
       if (f->units[i].killed > f->units[i].num) {
 #ifdef DEBUG_BATTLE
-	fprintf( logfile, "rounding kills: %d > %d\n", 
+	fprintf( logfile, "rounding kills: %d > %d\n",
 		 f->units[i].killed, f->units[i].num);
       fflush(logfile);
 #endif
@@ -987,16 +983,16 @@ void clean_up_attack (fleet *f)
       }
       if (f->units[i].stunned > f->units[i].num){
 #ifdef DEBUG_BATTLE
-	fprintf( logfile, "rounding stunned: %d > %d\n", 
+	fprintf( logfile, "rounding stunned: %d > %d\n",
 		 f->units[i].stunned, f->units[i].num);
       fflush(logfile);
 #endif
 	f->units[i].stunned = f->units[i].num;
       }
-      if (f->units[i].capping && 
-	  (f->units[i].capping >  f->units[i].num 
+      if (f->units[i].capping &&
+	  (f->units[i].capping >  f->units[i].num
 	   - f->units[i].stunned -f->units[i].killed) ) {
-	f->units[i].capping =  f->units[i].num 
+	f->units[i].capping =  f->units[i].num
 	  - f->units[i].stunned -f->units[i].killed;
       }
     }
@@ -1020,7 +1016,7 @@ void remove_roids (MYSQL *mysql, planet* p, int *lcap)
     "date=now(), tick=%d, type=1, text='<table class=report border=1 width=100%%>" \
     "<tr class=report><th colspan=4 align=left>Asteroid Lost</th></tr>"\
     "<tr><th>&nbsp;</th><th>Total</th><th>Lost</th></tr>%s</table>'";
-  
+
   char query[1024], dummy[256], table[512];
   int i;
 
@@ -1034,7 +1030,7 @@ void remove_roids (MYSQL *mysql, planet* p, int *lcap)
   fprintf (logfile, "%s\n", query);
       fflush(logfile);
 #endif
-  
+
   for (i=0; i<4; i++) {
     if (lcap[i]) {
       char * name = NULL;
@@ -1057,7 +1053,7 @@ void remove_roids (MYSQL *mysql, planet* p, int *lcap)
   fprintf (logfile, "%s\n", query);
       fflush(logfile);
 #endif
-  
+
 }
 
 void add_roids (MYSQL *mysql, planet* p, int *lcap, planet *target_p)
@@ -1123,8 +1119,8 @@ unsigned long long dv_networth (planet **p)
   do {
     fleet * pf = (*p_ptr)->total_fleet;
 
-    if (pf->rid[CAP_UNIT] &&  
-	(pf->rid[CAP_UNIT]->num - pf->rid[CAP_UNIT]->killed 
+    if (pf->rid[CAP_UNIT] &&
+	(pf->rid[CAP_UNIT]->num - pf->rid[CAP_UNIT]->killed
 	 - pf->rid[CAP_UNIT]->stunned - pf->rid[CAP_UNIT]->capping ) > 0) {
 
       (*p_ptr)->planet_score = pf->res->total;
@@ -1142,7 +1138,7 @@ unsigned long long dv_networth (planet **p)
   return total_networth;
 }
 
-void divide_roids_helper (planet **p, planet *target_p, 
+void divide_roids_helper (planet **p, planet *target_p,
                           unsigned long long *networth)
 {
   int i = 0, may_get, cnt;
@@ -1176,15 +1172,15 @@ void divide_roids_helper (planet **p, planet *target_p,
 
       if (may_get >= (u->num - u->killed - u->stunned - u->capping)) {
 	fprintf (logfile, "may_get %d more/equal then  pods: %d (c: %d)\n",
-		 may_get,  u->num - u->killed - u->stunned - u->capping, 
+		 may_get,  u->num - u->killed - u->stunned - u->capping,
                  u->capping);
         fflush(logfile);
 
 	(*p_ptr)->planet_score = 0;
   	may_get = u->num - u->killed - u->stunned - u->capping;
       }
-      may_get = (may_get > 0 ? may_get : 0); 
-      
+      may_get = (may_get > 0 ? may_get : 0);
+
       if (may_get > 0) {
 	/**/
         if (may_get != target_p->cap_roids[4])
@@ -1199,14 +1195,14 @@ void divide_roids_helper (planet **p, planet *target_p,
 
 	for (i=0; i<4; i++) {
 	  int tget;
- 
+
 	  if (nratio == 1.0)
 	    tget =  target_p->cap_roids[i];
-          else 
+          else
             tget  = rint( nratio * target_p->cap_roids[i] );
-	  
+
           while (tget > 0 && ((may_get-tget)<0 || tget > tcap_roids[i])) {
-            fprintf (logfile, 
+            fprintf (logfile,
                      "Fixing rounding error: tget %d, mg %d tr %d\n",
                      tget, may_get,tcap_roids[i]);
             fflush(logfile);
@@ -1219,7 +1215,7 @@ void divide_roids_helper (planet **p, planet *target_p,
             tget = 0;
             target_p->cap_roids[i] = 0;
           }
- 
+
 	  (*p_ptr)->cap_roids[i] += tget;
 	  tcap_roids[i] -= tget;
 	  may_get -= tget;
@@ -1244,7 +1240,7 @@ void divide_roids_helper (planet **p, planet *target_p,
         if (may_get > 0) {
 	  for (i=0; i<4 && may_get>0; i++) {
 	    while (((int)tcap_roids[i]) > 0 && may_get>0) {
-	      
+
 	      (*p_ptr)->cap_roids[i] += 1;
 	      tcap_roids[i] -= 1;
 	      may_get--;
@@ -1278,12 +1274,12 @@ void divide_roids_helper (planet **p, planet *target_p,
       }
 
       /**/
-      
-      fprintf (logfile, 
+
+      fprintf (logfile,
 	       "[id %d] may get %d (==0) (max %d), ->>" \
-	       " did get %d left %d (score %llu, ratio %f)\n", 
-	       (*p_ptr)->planet_id, may_get, 
-	       u->num - u->killed - u->stunned - u->capping, 
+	       " did get %d left %d (score %llu, ratio %f)\n",
+	       (*p_ptr)->planet_id, may_get,
+	       u->num - u->killed - u->stunned - u->capping,
 	       (*p_ptr)->cap_roids[4],  tcap_roids[4],
 	       (*p_ptr)->planet_score, ratio);
       fflush(logfile);
@@ -1302,7 +1298,7 @@ void divide_roids_helper (planet **p, planet *target_p,
       // u->capping += (*p_ptr)->cap_roids[4];
       u->capping = (*p_ptr)->cap_roids[4];
 
-    }  
+    }
   } while (*(++p_ptr));
 
   for (i=0; i<=4; i++) {
@@ -1324,7 +1320,7 @@ void divide_roids (MYSQL* mysql, fleet *f, planet **p, planet *target_p)
      - gibt es roids ?
      - wer hat pods ?
      - wieviel networth hat welche fleet ?
-     
+
      Roids je % networth und genuegend pods
   */
 

@@ -282,4 +282,3 @@ if (ISSET($new) || ISSET($reply) || ISSET($forward) || ISSET($send_to)) {
 }
 
 require "footer.php";
-?>

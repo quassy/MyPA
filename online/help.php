@@ -43,4 +43,3 @@ titlebox("Help");
 </center>
 <?php
 require "footer.php";
-?>

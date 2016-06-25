@@ -42,5 +42,3 @@ function get_type($type=0) {
   return $_SERVER['HTTP_USER_AGENT'];
 
 }
-
-?>

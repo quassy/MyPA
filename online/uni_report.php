@@ -216,5 +216,3 @@ function print_universe_alliance_report () {
          "No alliances found</span></td></tr>\n";
   }
 }
-
-?>

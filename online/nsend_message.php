@@ -80,6 +80,4 @@ send_message_form(500);
 <a href="javascript:close()">Close this Window</a></td></tr></table>
 
 <?php
-
 require "footer.php";
-?>

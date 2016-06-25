@@ -73,5 +73,3 @@ function get_new_coords (&$x, &$y, &$z, $open_cluster=1) {
 
   return 0;
 }
-
-?>

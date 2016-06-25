@@ -114,4 +114,3 @@ table.</td></tr>
 
 <?php
 require "footer.php";
-?>

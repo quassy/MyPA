@@ -77,5 +77,3 @@ Bit.<br>
 
 <?php
 require "footer.php";
-?>
-

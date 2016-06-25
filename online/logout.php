@@ -52,4 +52,3 @@ Go to <a href="index.php">login</a> page.
 
 <?php
 require "footer.php";
-?>

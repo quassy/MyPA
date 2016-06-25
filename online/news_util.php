@@ -130,5 +130,3 @@ function send_msg_fleet_move ($target_id, $eta, $order, $flnum, $name="ship") {
   insert_into_news ($Planetid, 6, $text);
   insert_into_news ($target_id, $type, $text_other);
 }
-
-?>

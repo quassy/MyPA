@@ -196,4 +196,3 @@ if ($defends!=0 || $attacks !=0) {
 echo "</center>\n";
 
 require "footer.php";
-?>

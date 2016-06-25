@@ -59,4 +59,3 @@ names/pictures/posts/mails/whatever may lead to direct deletion.</td></tr>
 
 <?php
 require "footer.php";
-?>
